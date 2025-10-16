@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
+import { decrypt } from '../_shared/crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,9 @@ Deno.serve(async (req) => {
       throw new Error('YouTube account not connected');
     }
 
+    // Decrypt access token
+    const accessToken = await decrypt(platformAccount.access_token);
+
     // Real YouTube Data API v3 implementation
     // YouTube Shorts API requires video upload with specific parameters
     const videoMetadata = {
@@ -66,7 +70,7 @@ Deno.serve(async (req) => {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${platformAccount.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
           'X-Upload-Content-Type': 'video/*',
         },

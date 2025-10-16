@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
+import { decrypt } from '../_shared/crypto.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,9 @@ Deno.serve(async (req) => {
       throw new Error('TikTok account not connected');
     }
 
+    // Decrypt access token
+    const accessToken = await decrypt(platformAccount.access_token);
+
     // Real TikTok Content Posting API implementation
     // Step 1: Initialize video upload
     const initResponse = await fetch(
@@ -52,7 +56,7 @@ Deno.serve(async (req) => {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${platformAccount.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

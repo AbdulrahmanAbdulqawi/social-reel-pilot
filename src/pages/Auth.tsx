@@ -8,6 +8,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const signUpSchema = z.object({
+  email: z.string().email("Invalid email address").max(255, "Email too long"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .max(72, "Password too long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+  username: z.string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must be less than 30 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+});
+
+const signInSchema = z.object({
+  email: z.string().email("Invalid email address").max(255, "Email too long"),
+  password: z.string().min(1, "Password is required"),
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -35,8 +55,10 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !username) {
-      toast.error("Please fill in all fields");
+    
+    const validation = signUpSchema.safeParse({ email, password, username });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 
@@ -65,8 +87,10 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error("Please fill in all fields");
+    
+    const validation = signInSchema.safeParse({ email, password });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 

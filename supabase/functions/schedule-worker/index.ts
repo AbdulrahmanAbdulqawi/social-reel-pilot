@@ -11,6 +11,26 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate webhook secret for security
+    const authHeader = req.headers.get('Authorization');
+    const expectedSecret = Deno.env.get('SCHEDULE_WORKER_SECRET');
+    
+    if (!expectedSecret) {
+      console.error('SCHEDULE_WORKER_SECRET not configured');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (authHeader !== `Bearer ${expectedSecret}`) {
+      console.error('Unauthorized schedule worker access attempt');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);

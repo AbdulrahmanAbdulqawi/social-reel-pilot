@@ -9,6 +9,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload as UploadIcon, Calendar } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+const uploadSchema = z.object({
+  title: z.string()
+    .min(1, "Title is required")
+    .max(200, "Title must be less than 200 characters"),
+  caption: z.string()
+    .max(2000, "Caption must be less than 2000 characters")
+    .optional(),
+  hashtags: z.string()
+    .max(500, "Hashtags too long")
+    .optional(),
+  platform: z.enum(["instagram", "tiktok", "youtube"], {
+    errorMap: () => ({ message: "Please select a platform" }),
+  }),
+});
 
 const Upload = () => {
   const navigate = useNavigate();
@@ -24,19 +42,33 @@ const Upload = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.type.startsWith("video/")) {
-        setVideoFile(file);
-      } else {
+      
+      if (!file.type.startsWith("video/")) {
         toast.error("Please select a video file");
+        return;
       }
+      
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error("File size must be less than 100MB");
+        return;
+      }
+      
+      setVideoFile(file);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !platform) {
-      toast.error("Please fill in required fields");
+    const validation = uploadSchema.safeParse({
+      title,
+      caption,
+      hashtags,
+      platform,
+    });
+    
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 
@@ -96,7 +128,6 @@ const Upload = () => {
       toast.success("Reel created successfully!");
       navigate("/dashboard");
     } catch (error) {
-      console.error(error);
       toast.error("Failed to create reel");
     } finally {
       setLoading(false);
