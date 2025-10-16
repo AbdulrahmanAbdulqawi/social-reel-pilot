@@ -46,17 +46,46 @@ Deno.serve(async (req) => {
       throw new Error('Instagram account not connected');
     }
 
-    // TODO: Replace with actual Instagram Graph API call
-    // For now, this is a mock implementation
-    // Real implementation would use:
-    // 1. Instagram Graph API to create media container
-    // 2. Upload video to container
-    // 3. Publish the container
-    
-    const mockResponse = {
-      id: `ig_${Date.now()}`,
-      permalink: `https://instagram.com/reel/${Date.now()}`,
-    };
+    // Real Instagram Graph API implementation
+    // Step 1: Create media container
+    const containerResponse = await fetch(
+      `https://graph.instagram.com/v18.0/${platformAccount.access_token}/media`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_type: 'REELS',
+          video_url: videoUrl,
+          caption: `${caption}\n\n${(hashtags || []).join(' ')}`,
+        }),
+      }
+    );
+
+    if (!containerResponse.ok) {
+      const error = await containerResponse.json();
+      throw new Error(`Instagram container creation failed: ${JSON.stringify(error)}`);
+    }
+
+    const { id: containerId } = await containerResponse.json();
+
+    // Step 2: Publish the container
+    const publishResponse = await fetch(
+      `https://graph.instagram.com/v18.0/${platformAccount.access_token}/media_publish`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creation_id: containerId,
+        }),
+      }
+    );
+
+    if (!publishResponse.ok) {
+      const error = await publishResponse.json();
+      throw new Error(`Instagram publish failed: ${JSON.stringify(error)}`);
+    }
+
+    const mockResponse = await publishResponse.json();
 
     console.log('Instagram post successful:', mockResponse);
 

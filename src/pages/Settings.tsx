@@ -3,10 +3,96 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Instagram, Youtube } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface PlatformAccount {
+  id: string;
+  platform: string;
+  connected_at: string;
+}
 
 const Settings = () => {
-  const handleConnect = (platform: string) => {
-    toast.info(`Connect ${platform} - Coming soon!`);
+  const [connectedAccounts, setConnectedAccounts] = useState<PlatformAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchConnectedAccounts();
+  }, []);
+
+  const fetchConnectedAccounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('platform_accounts')
+        .select('*');
+
+      if (error) throw error;
+      setConnectedAccounts(data || []);
+    } catch (error) {
+      console.error('Error fetching connected accounts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnect = async (platform: string) => {
+    try {
+      let authUrl = '';
+      
+      // Build OAuth URLs for each platform
+      switch (platform.toLowerCase()) {
+        case 'instagram':
+          // Instagram OAuth requires Facebook App ID
+          // https://developers.facebook.com/docs/instagram-basic-display-api/getting-started
+          const instagramAppId = 'YOUR_INSTAGRAM_APP_ID'; // User needs to provide this
+          const instagramRedirectUri = `${window.location.origin}/settings`;
+          authUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(instagramRedirectUri)}&scope=user_profile,user_media&response_type=code`;
+          toast.info('Instagram OAuth requires app setup. Check console for details.');
+          console.log('Instagram OAuth URL:', authUrl);
+          console.log('Steps: 1. Create Facebook App, 2. Add Instagram Basic Display, 3. Set redirect URI');
+          break;
+          
+        case 'tiktok':
+          // TikTok OAuth
+          // https://developers.tiktok.com/doc/login-kit-web
+          const tiktokClientKey = 'YOUR_TIKTOK_CLIENT_KEY'; // User needs to provide this
+          const tiktokRedirectUri = `${window.location.origin}/settings`;
+          authUrl = `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientKey}&scope=user.info.basic,video.list&response_type=code&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}`;
+          toast.info('TikTok OAuth requires app setup. Check console for details.');
+          console.log('TikTok OAuth URL:', authUrl);
+          console.log('Steps: 1. Register app at developers.tiktok.com, 2. Get Client Key, 3. Set redirect URI');
+          break;
+          
+        case 'youtube':
+          // YouTube OAuth via Google
+          // https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
+          const googleClientId = 'YOUR_GOOGLE_CLIENT_ID'; // User needs to provide this
+          const youtubeRedirectUri = `${window.location.origin}/settings`;
+          authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(youtubeRedirectUri)}&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload&access_type=offline`;
+          toast.info('YouTube OAuth requires Google Cloud setup. Check console for details.');
+          console.log('YouTube OAuth URL:', authUrl);
+          console.log('Steps: 1. Create project in Google Cloud Console, 2. Enable YouTube Data API v3, 3. Create OAuth 2.0 credentials');
+          break;
+          
+        default:
+          toast.error('Unknown platform');
+          return;
+      }
+      
+      // In production, you would redirect to authUrl
+      // window.location.href = authUrl;
+      
+      toast.info(`OAuth flow for ${platform} - Configure API credentials first`);
+    } catch (error) {
+      console.error('Error connecting platform:', error);
+      toast.error('Failed to connect platform');
+    }
+  };
+
+  const isConnected = (platformName: string) => {
+    return connectedAccounts.some(
+      acc => acc.platform.toLowerCase() === platformName.toLowerCase()
+    );
   };
 
   const platforms = [
@@ -14,7 +100,7 @@ const Settings = () => {
       name: "Instagram",
       icon: Instagram,
       color: "bg-pink-500",
-      connected: false,
+      connected: isConnected("instagram"),
     },
     {
       name: "TikTok",
@@ -24,13 +110,13 @@ const Settings = () => {
         </svg>
       ),
       color: "bg-black",
-      connected: false,
+      connected: isConnected("tiktok"),
     },
     {
       name: "YouTube",
       icon: Youtube,
       color: "bg-red-500",
-      connected: false,
+      connected: isConnected("youtube"),
     },
   ];
 
