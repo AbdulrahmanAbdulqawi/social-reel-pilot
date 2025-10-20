@@ -12,6 +12,8 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           
           {/* Protected routes with sidebar */}
           <Route

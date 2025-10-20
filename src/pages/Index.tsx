@@ -95,6 +95,33 @@ const Index = () => {
           </Button>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t bg-background/50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © 2025 ReelHub. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              <Button
+                variant="link"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => navigate("/terms")}
+              >
+                Terms of Service
+              </Button>
+              <Button
+                variant="link"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => navigate("/privacy")}
+              >
+                Privacy Policy
+              </Button>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
