@@ -5,6 +5,7 @@ const corsHeaders = {
 
 interface StartAuthBody {
   redirectUri: string;
+  isSandbox?: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { redirectUri } = (await req.json()) as StartAuthBody;
+    const { redirectUri, isSandbox } = (await req.json()) as StartAuthBody;
 
     const tiktokClientKey = Deno.env.get('TIKTOK_CLIENT_KEY');
     if (!tiktokClientKey) {
@@ -29,6 +30,8 @@ Deno.serve(async (req) => {
     if (!redirectUri) {
       throw new Error('Missing redirectUri');
     }
+
+    console.log('TikTok Auth Request:', { redirectUri, isSandbox, clientKeyLength: tiktokClientKey.length });
 
     const params = new URLSearchParams({
       client_key: tiktokClientKey,
@@ -39,6 +42,8 @@ Deno.serve(async (req) => {
     });
 
     const url = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
+    
+    console.log('Generated TikTok Auth URL (sandbox mode:', isSandbox, '):', url);
 
     return new Response(JSON.stringify({ url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -37,6 +37,7 @@ const Settings = () => {
 
   const handleConnect = async (platform: string) => {
     try {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const redirectUri = `${window.location.origin}/settings`;
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -78,13 +79,20 @@ const Settings = () => {
       switch (platform.toLowerCase()) {
         case 'tiktok': {
           const { data, error } = await supabase.functions.invoke('tiktok-auth-url', {
-            body: { redirectUri }
+            body: { 
+              redirectUri,
+              isSandbox: isLocalhost
+            }
           });
           if (error || !data?.url) {
+            console.error('TikTok auth URL error:', error);
             toast.error('Failed to start TikTok connect');
             return;
           }
           authUrl = data.url as string;
+          if (isLocalhost) {
+            toast.info('Using TikTok Sandbox mode for localhost testing');
+          }
           break;
         }
           
