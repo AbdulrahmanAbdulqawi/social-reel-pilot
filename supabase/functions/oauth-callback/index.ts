@@ -35,16 +35,52 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Exchange code for tokens (platform-specific implementation needed)
+    // Exchange code for tokens
     let tokenResponse: OAuthTokenResponse;
     
-    // This is a placeholder - actual implementation would exchange the code
-    // for tokens using the platform's OAuth endpoint
-    tokenResponse = {
-      access_token: code, // In reality, this would be the result of token exchange
-      refresh_token: undefined,
-      expires_in: 3600,
-    };
+    if (platform === 'tiktok') {
+      // TikTok token exchange
+      const tiktokClientKey = Deno.env.get('TIKTOK_CLIENT_KEY');
+      const tiktokClientSecret = Deno.env.get('TIKTOK_CLIENT_SECRET');
+      
+      if (!tiktokClientKey || !tiktokClientSecret) {
+        throw new Error('TikTok credentials not configured');
+      }
+
+      const tokenEndpoint = 'https://open.tiktokapis.com/v2/oauth/token/';
+      const redirectUri = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}/settings`;
+      
+      const tokenParams = new URLSearchParams({
+        client_key: tiktokClientKey,
+        client_secret: tiktokClientSecret,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri,
+      });
+
+      const tokenRes = await fetch(tokenEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: tokenParams.toString(),
+      });
+
+      const tokenData = await tokenRes.json();
+      
+      if (tokenData.error || !tokenData.data) {
+        console.error('TikTok token exchange error:', tokenData);
+        throw new Error(tokenData.error_description || 'Failed to exchange code for token');
+      }
+
+      tokenResponse = {
+        access_token: tokenData.data.access_token,
+        refresh_token: tokenData.data.refresh_token,
+        expires_in: tokenData.data.expires_in,
+      };
+    } else {
+      throw new Error(`OAuth not implemented for platform: ${platform}`);
+    }
 
     // Encrypt tokens before storing
     const encryptedAccessToken = await encrypt(tokenResponse.access_token);

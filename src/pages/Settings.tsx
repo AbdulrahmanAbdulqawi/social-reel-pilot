@@ -37,52 +37,63 @@ const Settings = () => {
 
   const handleConnect = async (platform: string) => {
     try {
+      const redirectUri = `${window.location.origin}/settings`;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Please log in first');
+        return;
+      }
+
+      // Check for OAuth callback
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      
+      if (code) {
+        // Handle OAuth callback
+        const { data, error } = await supabase.functions.invoke('oauth-callback', {
+          body: { 
+            platform: platform.toLowerCase(), 
+            code,
+            userId: user.id 
+          }
+        });
+
+        if (error) {
+          toast.error(`Failed to connect ${platform}`);
+          console.error('OAuth callback error:', error);
+        } else {
+          toast.success(`${platform} connected successfully!`);
+          fetchConnectedAccounts();
+          // Clear URL params
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+        return;
+      }
+
+      // Initiate OAuth flow
       let authUrl = '';
       
-      // Build OAuth URLs for each platform
       switch (platform.toLowerCase()) {
-        case 'instagram':
-          // Instagram OAuth requires Facebook App ID
-          // https://developers.facebook.com/docs/instagram-basic-display-api/getting-started
-          const instagramAppId = 'YOUR_INSTAGRAM_APP_ID'; // User needs to provide this
-          const instagramRedirectUri = `${window.location.origin}/settings`;
-          authUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(instagramRedirectUri)}&scope=user_profile,user_media&response_type=code`;
-          toast.info('Instagram OAuth requires app setup. Check console for details.');
-          console.log('Instagram OAuth URL:', authUrl);
-          console.log('Steps: 1. Create Facebook App, 2. Add Instagram Basic Display, 3. Set redirect URI');
+        case 'tiktok':
+          authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${import.meta.env.VITE_TIKTOK_CLIENT_KEY || 'TIKTOK_CLIENT_KEY'}&scope=user.info.basic,video.publish&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=tiktok`;
           break;
           
-        case 'tiktok':
-          // TikTok OAuth
-          // https://developers.tiktok.com/doc/login-kit-web
-          const tiktokClientKey = 'YOUR_TIKTOK_CLIENT_KEY'; // User needs to provide this
-          const tiktokRedirectUri = `${window.location.origin}/settings`;
-          authUrl = `https://www.tiktok.com/auth/authorize/?client_key=${tiktokClientKey}&scope=user.info.basic,video.list&response_type=code&redirect_uri=${encodeURIComponent(tiktokRedirectUri)}`;
-          toast.info('TikTok OAuth requires app setup. Check console for details.');
-          console.log('TikTok OAuth URL:', authUrl);
-          console.log('Steps: 1. Register app at developers.tiktok.com, 2. Get Client Key, 3. Set redirect URI');
-          break;
+        case 'instagram':
+          toast.info('Instagram OAuth - Coming soon');
+          return;
           
         case 'youtube':
-          // YouTube OAuth via Google
-          // https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
-          const googleClientId = 'YOUR_GOOGLE_CLIENT_ID'; // User needs to provide this
-          const youtubeRedirectUri = `${window.location.origin}/settings`;
-          authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(youtubeRedirectUri)}&response_type=code&scope=https://www.googleapis.com/auth/youtube.upload&access_type=offline`;
-          toast.info('YouTube OAuth requires Google Cloud setup. Check console for details.');
-          console.log('YouTube OAuth URL:', authUrl);
-          console.log('Steps: 1. Create project in Google Cloud Console, 2. Enable YouTube Data API v3, 3. Create OAuth 2.0 credentials');
-          break;
+          toast.info('YouTube OAuth - Coming soon');
+          return;
           
         default:
           toast.error('Unknown platform');
           return;
       }
       
-      // In production, you would redirect to authUrl
-      // window.location.href = authUrl;
-      
-      toast.info(`OAuth flow for ${platform} - Configure API credentials first`);
+      // Redirect to OAuth
+      window.location.href = authUrl;
     } catch (error) {
       console.error('Error connecting platform:', error);
       toast.error('Failed to connect platform');
