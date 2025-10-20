@@ -52,10 +52,11 @@ const Settings = () => {
       if (code) {
         // Handle OAuth callback
         const { data, error } = await supabase.functions.invoke('oauth-callback', {
-          body: { 
-            platform: platform.toLowerCase(), 
+          body: {
+            platform: platform.toLowerCase(),
             code,
-            userId: user.id 
+            userId: user.id,
+            redirectUri
           }
         });
 
@@ -75,9 +76,17 @@ const Settings = () => {
       let authUrl = '';
       
       switch (platform.toLowerCase()) {
-        case 'tiktok':
-          authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${import.meta.env.VITE_TIKTOK_CLIENT_KEY || 'TIKTOK_CLIENT_KEY'}&scope=user.info.basic,video.publish&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=tiktok`;
+        case 'tiktok': {
+          const { data, error } = await supabase.functions.invoke('tiktok-auth-url', {
+            body: { redirectUri }
+          });
+          if (error || !data?.url) {
+            toast.error('Failed to start TikTok connect');
+            return;
+          }
+          authUrl = data.url as string;
           break;
+        }
           
         case 'instagram':
           toast.info('Instagram OAuth - Coming soon');

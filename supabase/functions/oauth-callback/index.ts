@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { platform, code, userId } = await req.json();
+    const { platform, code, userId, redirectUri } = await req.json();
 
     console.log('OAuth callback for platform:', platform);
 
@@ -48,8 +48,9 @@ Deno.serve(async (req) => {
       }
 
       const tokenEndpoint = 'https://open.tiktokapis.com/v2/oauth/token/';
-      const redirectUri = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}/settings`;
-      
+      if (!redirectUri) {
+        throw new Error('Missing redirectUri');
+      }
       const tokenParams = new URLSearchParams({
         client_key: tiktokClientKey,
         client_secret: tiktokClientSecret,
