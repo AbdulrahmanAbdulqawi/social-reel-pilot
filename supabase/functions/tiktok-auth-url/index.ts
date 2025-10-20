@@ -33,12 +33,15 @@ Deno.serve(async (req) => {
 
     console.log('TikTok Auth Request:', { redirectUri, isSandbox, clientKeyLength: tiktokClientKey.length });
 
+    // Generate random CSRF state token for security
+    const csrfState = Math.random().toString(36).substring(2);
+
     const params = new URLSearchParams({
       client_key: tiktokClientKey,
       scope: 'user.info.basic,video.publish',
       response_type: 'code',
       redirect_uri: redirectUri,
-      state: 'tiktok',
+      state: csrfState,
     });
 
     const url = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
