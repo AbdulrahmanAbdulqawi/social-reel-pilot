@@ -79,6 +79,55 @@ Deno.serve(async (req) => {
         refresh_token: tokenData.data.refresh_token,
         expires_in: tokenData.data.expires_in,
       };
+    } else if (platform === 'instagram' || platform === 'facebook') {
+      // Meta (Facebook/Instagram) token exchange
+      const metaAppId = Deno.env.get('META_APP_ID');
+      const metaAppSecret = Deno.env.get('META_APP_SECRET');
+      
+      if (!metaAppId || !metaAppSecret) {
+        throw new Error('Meta credentials not configured');
+      }
+
+      if (!redirectUri) {
+        throw new Error('Missing redirectUri');
+      }
+
+      const tokenEndpoint = 'https://graph.facebook.com/v21.0/oauth/access_token';
+      const tokenParams = new URLSearchParams({
+        client_id: metaAppId,
+        client_secret: metaAppSecret,
+        code: code,
+        redirect_uri: redirectUri,
+      });
+
+      const tokenRes = await fetch(`${tokenEndpoint}?${tokenParams.toString()}`);
+      const tokenData = await tokenRes.json();
+      
+      if (tokenData.error) {
+        console.error('Meta token exchange error:', tokenData);
+        throw new Error(tokenData.error.message || 'Failed to exchange code for token');
+      }
+
+      // Exchange short-lived token for long-lived token
+      const longLivedParams = new URLSearchParams({
+        grant_type: 'fb_exchange_token',
+        client_id: metaAppId,
+        client_secret: metaAppSecret,
+        fb_exchange_token: tokenData.access_token,
+      });
+
+      const longLivedRes = await fetch(`${tokenEndpoint}?${longLivedParams.toString()}`);
+      const longLivedData = await longLivedRes.json();
+
+      if (longLivedData.error) {
+        console.error('Meta long-lived token error:', longLivedData);
+        throw new Error(longLivedData.error.message || 'Failed to get long-lived token');
+      }
+
+      tokenResponse = {
+        access_token: longLivedData.access_token,
+        expires_in: longLivedData.expires_in,
+      };
     } else {
       throw new Error(`OAuth not implemented for platform: ${platform}`);
     }

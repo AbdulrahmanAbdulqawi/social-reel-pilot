@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Instagram, Youtube } from "lucide-react";
+import { Instagram, Youtube, Facebook } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -89,9 +89,31 @@ const Settings = () => {
           break;
         }
           
-        case 'instagram':
-          toast.info('Instagram OAuth - Coming soon');
-          return;
+        case 'instagram': {
+          const { data, error } = await supabase.functions.invoke('instagram-auth-url', {
+            body: { redirectUri }
+          });
+          if (error || !data?.url) {
+            console.error('Instagram auth URL error:', error);
+            toast.error('Failed to start Instagram connect');
+            return;
+          }
+          authUrl = data.url as string;
+          break;
+        }
+
+        case 'facebook': {
+          const { data, error } = await supabase.functions.invoke('facebook-auth-url', {
+            body: { redirectUri }
+          });
+          if (error || !data?.url) {
+            console.error('Facebook auth URL error:', error);
+            toast.error('Failed to start Facebook connect');
+            return;
+          }
+          authUrl = data.url as string;
+          break;
+        }
           
         case 'youtube':
           toast.info('YouTube OAuth - Coming soon');
@@ -122,6 +144,12 @@ const Settings = () => {
       icon: Instagram,
       color: "bg-pink-500",
       connected: isConnected("instagram"),
+    },
+    {
+      name: "Facebook",
+      icon: Facebook,
+      color: "bg-blue-600",
+      connected: isConnected("facebook"),
     },
     {
       name: "TikTok",
