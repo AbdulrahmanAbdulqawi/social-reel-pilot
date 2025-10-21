@@ -10,6 +10,7 @@ interface PlatformAccount {
   id: string;
   platform: string;
   connected_at: string;
+  expires_at: string | null;
 }
 
 const Settings = () => {
@@ -159,10 +160,22 @@ const Settings = () => {
     }
   };
 
-  const isConnected = (platformName: string) => {
-    return connectedAccounts.some(
+  const isTokenExpired = (account: PlatformAccount | undefined) => {
+    if (!account || !account.expires_at) return false;
+    return new Date(account.expires_at) < new Date();
+  };
+
+  const getPlatformAccount = (platformName: string) => {
+    return connectedAccounts.find(
       acc => acc.platform.toLowerCase() === platformName.toLowerCase()
     );
+  };
+
+  const isConnected = (platformName: string) => {
+    const account = getPlatformAccount(platformName);
+    if (!account) return false;
+    // Consider disconnected if token is expired
+    return !isTokenExpired(account);
   };
 
   const platforms = [
@@ -222,9 +235,19 @@ const Settings = () => {
                 </div>
                 <div>
                   <p className="font-medium">{platform.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {platform.connected ? "Connected" : "Not connected"}
-                  </p>
+                  {(() => {
+                    const account = getPlatformAccount(platform.name);
+                    const expired = account && isTokenExpired(account);
+                    return (
+                      <p className="text-sm text-muted-foreground">
+                        {platform.connected 
+                          ? "Connected" 
+                          : expired 
+                            ? "Token expired - reconnect required" 
+                            : "Not connected"}
+                      </p>
+                    );
+                  })()}
                 </div>
               </div>
               {platform.connected ? (
@@ -236,7 +259,9 @@ const Settings = () => {
                   variant="outline"
                   onClick={() => handleConnect(platform.name)}
                 >
-                  Connect
+                  {getPlatformAccount(platform.name) && isTokenExpired(getPlatformAccount(platform.name)!) 
+                    ? "Reconnect" 
+                    : "Connect"}
                 </Button>
               )}
             </div>
