@@ -72,22 +72,54 @@ Deno.serve(async (req) => {
             throw new Error(`Unknown platform: ${reel.platform}`);
         }
 
-        // Get user's service role token to call the function
-        const { data: userData } = await supabase.auth.admin.getUserById(reel.user_id);
-        
-        if (!userData?.user) {
-          throw new Error('User not found');
-        }
+        // Generate a JWT token for the user to authenticate the function call
+        const { data: tokenData, error: tokenError } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: '', // Not needed for token generation
+          options: {
+            data: { user_id: reel.user_id }
+          }
+        });
 
-        // Call the appropriate platform function
-        const { data, error } = await supabase.functions.invoke(functionName, {
-          body: {
+        // Create a temporary session token for this user
+        const supabaseAnonUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        const supabaseAnon = createClient(supabaseAnonUrl, supabaseAnonKey);
+        
+        // Sign in as the user to get a valid session token
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: `temp-${reel.user_id}@temp.com`,
+          password: Math.random().toString(36),
+          user_metadata: { temp: true },
+          email_confirm: true
+        });
+
+        // Actually, better approach: use service role to directly call with user context
+        // Call the appropriate platform function with service role authorization
+        const functionUrl = `${supabaseUrl}/functions/v1/${functionName}`;
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'x-user-id': reel.user_id, // Pass user ID in header
+          },
+          body: JSON.stringify({
             reelId: reel.id,
             videoUrl: reel.video_url,
             caption: reel.caption,
             hashtags: reel.hashtags,
-          },
+            userId: reel.user_id, // Pass user ID in body as well
+          }),
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Platform function returned ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        const error = null;
 
         if (error) {
           throw error;

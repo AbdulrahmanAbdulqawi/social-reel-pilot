@@ -11,6 +11,7 @@ interface PostReelRequest {
   videoUrl: string;
   caption: string;
   hashtags?: string[];
+  userId?: string; // Optional: for background worker calls
 }
 
 Deno.serve(async (req) => {
@@ -23,23 +24,34 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { reelId, videoUrl, caption, hashtags } = await req.json() as PostReelRequest;
+    const { reelId, videoUrl, caption, hashtags, userId } = await req.json() as PostReelRequest;
 
     console.log('Posting to Instagram:', { reelId, videoUrl, caption });
 
-    // Get platform account for Instagram
-    const { data: session } = await supabase.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-    );
+    // Determine user ID: either from request body (background worker) or from auth token (frontend)
+    let authenticatedUserId: string;
+    
+    if (userId) {
+      // Background worker call with userId provided
+      authenticatedUserId = userId;
+      console.log('Using provided userId for background post');
+    } else {
+      // Frontend call with user JWT token
+      const { data: session } = await supabase.auth.getUser(
+        req.headers.get('Authorization')?.replace('Bearer ', '') || ''
+      );
 
-    if (!session?.user) {
-      throw new Error('Unauthorized');
+      if (!session?.user) {
+        throw new Error('Unauthorized');
+      }
+      
+      authenticatedUserId = session.user.id;
     }
 
     const { data: platformAccount, error: accountError } = await supabase
       .from('platform_accounts')
       .select('*')
-      .eq('user_id', session.user.id)
+      .eq('user_id', authenticatedUserId)
       .eq('platform', 'instagram')
       .single();
 
