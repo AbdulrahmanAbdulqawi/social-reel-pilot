@@ -18,27 +18,29 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
+    
     console.log('Triggering schedule worker...');
 
-    // Call the schedule-worker function with proper authentication
-    const { data, error } = await supabase.functions.invoke('schedule-worker', {
+    // Call the schedule-worker function with proper authentication using fetch
+    const response = await fetch(`${supabaseUrl}/functions/v1/schedule-worker`, {
+      method: 'POST',
       headers: {
-        Authorization: `Bearer ${scheduleWorkerSecret}`,
+        'Authorization': `Bearer ${scheduleWorkerSecret}`,
+        'Content-Type': 'application/json',
       },
-      body: { 
+      body: JSON.stringify({ 
         time: new Date().toISOString(),
         source: 'cron-trigger'
-      },
+      }),
     });
 
-    if (error) {
-      console.error('Error invoking schedule-worker:', error);
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error invoking schedule-worker:', errorText);
+      throw new Error(`Schedule worker returned ${response.status}: ${errorText}`);
     }
 
+    const data = await response.json();
     console.log('Schedule worker completed:', data);
 
     return new Response(
