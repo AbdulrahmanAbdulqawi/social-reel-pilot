@@ -22,28 +22,29 @@ Deno.serve(async (req) => {
 
     const { redirectUri } = (await req.json()) as StartAuthBody;
 
-    const instagramAppId = Deno.env.get('INSTAGRAM_APP_ID');
-    if (!instagramAppId) {
-      throw new Error('Instagram App ID not configured');
+    const metaAppId = Deno.env.get('META_APP_ID');
+    if (!metaAppId) {
+      throw new Error('Meta App ID not configured');
     }
     if (!redirectUri) {
       throw new Error('Missing redirectUri');
     }
 
-    console.log('Instagram Auth Request:', { redirectUri, appIdLength: instagramAppId.length });
+    console.log('Instagram Auth Request:', { redirectUri, appIdLength: metaAppId.length });
 
     // Generate random CSRF state token for security
     const csrfState = Math.random().toString(36).substring(2);
 
+    // Use Facebook Login for Instagram API with Instagram Login (Business Login)
     const params = new URLSearchParams({
-      client_id: instagramAppId,
+      client_id: metaAppId,
       redirect_uri: redirectUri,
-      scope: 'instagram_business_basic,instagram_business_content_publish,instagram_business_manage_messages,instagram_business_manage_comments',
+      scope: 'instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement',
       response_type: 'code',
       state: csrfState,
     });
 
-    const url = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+    const url = `https://www.facebook.com/v21.0/dialog/oauth?${params.toString()}`;
     
     console.log('Generated Instagram Auth URL:', url);
 
