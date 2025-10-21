@@ -2,3 +2,6 @@ project_id = "tlvjvlogyirfatfoujrv"
 
 [functions.cron-trigger-schedule-worker]
 verify_jwt = false
+
+[functions.schedule-worker]
+verify_jwt = false
