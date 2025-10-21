@@ -18,7 +18,58 @@ const Settings = () => {
 
   useEffect(() => {
     fetchConnectedAccounts();
+    handleOAuthCallback();
   }, []);
+
+  const handleOAuthCallback = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    
+    if (!code) return;
+
+    // Get platform from localStorage (set during auth initiation)
+    const platform = localStorage.getItem('oauth_platform');
+    if (!platform) {
+      console.error('No platform found for OAuth callback');
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please log in first');
+        return;
+      }
+
+      const redirectUri = `${window.location.origin}/settings`;
+      
+      const { data, error } = await supabase.functions.invoke('oauth-callback', {
+        body: {
+          platform: platform.toLowerCase(),
+          code,
+          userId: user.id,
+          redirectUri
+        }
+      });
+
+      if (error) {
+        toast.error(`Failed to connect ${platform}`);
+        console.error('OAuth callback error:', error);
+      } else {
+        toast.success(`${platform} connected successfully!`);
+        fetchConnectedAccounts();
+      }
+    } catch (error) {
+      console.error('Error processing OAuth callback:', error);
+      toast.error('Failed to connect platform');
+    } finally {
+      // Clear OAuth data
+      localStorage.removeItem('oauth_platform');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  };
 
   const fetchConnectedAccounts = async () => {
     try {
@@ -45,32 +96,8 @@ const Settings = () => {
         return;
       }
 
-      // Check for OAuth callback
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      
-      if (code) {
-        // Handle OAuth callback
-        const { data, error } = await supabase.functions.invoke('oauth-callback', {
-          body: {
-            platform: platform.toLowerCase(),
-            code,
-            userId: user.id,
-            redirectUri
-          }
-        });
-
-        if (error) {
-          toast.error(`Failed to connect ${platform}`);
-          console.error('OAuth callback error:', error);
-        } else {
-          toast.success(`${platform} connected successfully!`);
-          fetchConnectedAccounts();
-          // Clear URL params
-          window.history.replaceState({}, '', window.location.pathname);
-        }
-        return;
-      }
+      // Store platform for OAuth callback
+      localStorage.setItem('oauth_platform', platform);
 
       // Initiate OAuth flow
       let authUrl = '';
