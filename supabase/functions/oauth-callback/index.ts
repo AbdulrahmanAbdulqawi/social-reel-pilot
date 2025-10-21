@@ -79,8 +79,61 @@ Deno.serve(async (req) => {
         refresh_token: tokenData.data.refresh_token,
         expires_in: tokenData.data.expires_in,
       };
-    } else if (platform === 'instagram' || platform === 'facebook') {
-      // Meta (Facebook/Instagram) token exchange
+    } else if (platform === 'instagram') {
+      // Instagram API with Instagram Login
+      const instagramAppId = Deno.env.get('INSTAGRAM_APP_ID');
+      const instagramAppSecret = Deno.env.get('INSTAGRAM_APP_SECRET');
+      
+      if (!instagramAppId || !instagramAppSecret) {
+        throw new Error('Instagram credentials not configured');
+      }
+
+      if (!redirectUri) {
+        throw new Error('Missing redirectUri');
+      }
+
+      // Exchange code for short-lived access token
+      const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: instagramAppId,
+          client_secret: instagramAppSecret,
+          grant_type: 'authorization_code',
+          redirect_uri: redirectUri,
+          code: code,
+        }),
+      });
+
+      const tokenData = await tokenRes.json();
+      
+      if (tokenData.error || !tokenData.access_token) {
+        console.error('Instagram token exchange error:', tokenData);
+        throw new Error(tokenData.error_message || 'Failed to exchange code for token');
+      }
+
+      console.log('Instagram short-lived token obtained');
+
+      // Exchange short-lived token for long-lived token (60 days)
+      const longLivedRes = await fetch(
+        `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${instagramAppSecret}&access_token=${tokenData.access_token}`
+      );
+
+      const longLivedData = await longLivedRes.json();
+
+      if (longLivedData.error) {
+        console.error('Instagram long-lived token error:', longLivedData);
+        throw new Error(longLivedData.error.message || 'Failed to get long-lived token');
+      }
+
+      console.log('Instagram long-lived token obtained, expires in:', longLivedData.expires_in);
+
+      tokenResponse = {
+        access_token: longLivedData.access_token,
+        expires_in: longLivedData.expires_in,
+      };
+    } else if (platform === 'facebook') {
+      // Facebook/Meta token exchange
       const metaAppId = Deno.env.get('META_APP_ID');
       const metaAppSecret = Deno.env.get('META_APP_SECRET');
       
