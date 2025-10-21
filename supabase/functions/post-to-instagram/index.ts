@@ -79,6 +79,18 @@ Deno.serve(async (req) => {
 
     if (!containerResponse.ok) {
       const error = await containerResponse.json();
+      
+      // Check if token is invalid or expired
+      if (error?.error?.code === 190 || error?.error?.message?.includes('Invalid OAuth 2.0 Access Token')) {
+        console.log('Instagram token expired, marking for reconnection');
+        // Mark token as expired
+        await supabase
+          .from('platform_accounts')
+          .update({ expires_at: new Date().toISOString() })
+          .eq('user_id', authenticatedUserId)
+          .eq('platform', 'instagram');
+      }
+      
       throw new Error(`Instagram container creation failed: ${JSON.stringify(error)}`);
     }
 
@@ -98,6 +110,18 @@ Deno.serve(async (req) => {
 
     if (!publishResponse.ok) {
       const error = await publishResponse.json();
+      
+      // Check if token is invalid or expired
+      if (error?.error?.code === 190 || error?.error?.message?.includes('Invalid OAuth 2.0 Access Token')) {
+        console.log('Instagram token expired, marking for reconnection');
+        // Mark token as expired
+        await supabase
+          .from('platform_accounts')
+          .update({ expires_at: new Date().toISOString() })
+          .eq('user_id', authenticatedUserId)
+          .eq('platform', 'instagram');
+      }
+      
       throw new Error(`Instagram publish failed: ${JSON.stringify(error)}`);
     }
 

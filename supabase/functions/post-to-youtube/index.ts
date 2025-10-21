@@ -11,6 +11,7 @@ interface PostReelRequest {
   videoUrl: string;
   caption: string;
   hashtags?: string[];
+  userId?: string; // Optional: for background worker calls
 }
 
 Deno.serve(async (req) => {
@@ -23,22 +24,32 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { reelId, videoUrl, caption, hashtags } = await req.json() as PostReelRequest;
+    const { reelId, videoUrl, caption, hashtags, userId } = await req.json() as PostReelRequest;
 
     console.log('Posting to YouTube Shorts:', { reelId, videoUrl, caption });
 
-    const { data: session } = await supabase.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-    );
+    // Determine user ID: either from request body (background worker) or from auth token (frontend)
+    let authenticatedUserId: string;
+    
+    if (userId) {
+      authenticatedUserId = userId;
+      console.log('Using provided userId for background post');
+    } else {
+      const { data: session } = await supabase.auth.getUser(
+        req.headers.get('Authorization')?.replace('Bearer ', '') || ''
+      );
 
-    if (!session?.user) {
-      throw new Error('Unauthorized');
+      if (!session?.user) {
+        throw new Error('Unauthorized');
+      }
+      
+      authenticatedUserId = session.user.id;
     }
 
     const { data: platformAccount, error: accountError } = await supabase
       .from('platform_accounts')
       .select('*')
-      .eq('user_id', session.user.id)
+      .eq('user_id', authenticatedUserId)
       .eq('platform', 'youtube')
       .single();
 
@@ -80,6 +91,17 @@ Deno.serve(async (req) => {
 
     if (!uploadResponse.ok) {
       const error = await uploadResponse.json();
+      
+      // Check if token is invalid or expired
+      if (error?.error?.code === 401 || error?.error?.message?.includes('Invalid Credentials')) {
+        console.log('YouTube token expired, marking for reconnection');
+        await supabase
+          .from('platform_accounts')
+          .update({ expires_at: new Date().toISOString() })
+          .eq('user_id', authenticatedUserId)
+          .eq('platform', 'youtube');
+      }
+      
       throw new Error(`YouTube upload init failed: ${JSON.stringify(error)}`);
     }
 
