@@ -57,20 +57,52 @@ Deno.serve(async (req) => {
       .single();
 
     if (reel) {
-      // Update or insert analytics
-      await supabaseClient
+      // Check if analytics record exists
+      const { data: existing } = await supabaseClient
         .from('reel_analytics')
-        .upsert({
-          reel_id: reel.id,
-          views: analytics.views || 0,
-          likes: analytics.likes || 0,
-          comments: analytics.comments || 0,
-          shares: analytics.shares || 0,
-          platform_response_id: postId,
-          fetched_at: new Date().toISOString(),
-        }, {
-          onConflict: 'reel_id,platform_response_id',
-        });
+        .select('id')
+        .eq('reel_id', reel.id)
+        .eq('platform_response_id', postId)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing record
+        const { error: updateError } = await supabaseClient
+          .from('reel_analytics')
+          .update({
+            views: analytics.views || 0,
+            likes: analytics.likes || 0,
+            comments: analytics.comments || 0,
+            shares: analytics.shares || 0,
+            fetched_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+
+        if (updateError) {
+          console.error('Error updating analytics:', updateError);
+        }
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabaseClient
+          .from('reel_analytics')
+          .insert({
+            reel_id: reel.id,
+            views: analytics.views || 0,
+            likes: analytics.likes || 0,
+            comments: analytics.comments || 0,
+            shares: analytics.shares || 0,
+            platform_response_id: postId,
+            fetched_at: new Date().toISOString(),
+          });
+
+        if (insertError) {
+          console.error('Error inserting analytics:', insertError);
+        } else {
+          console.log('Analytics inserted successfully for reel:', reel.id);
+        }
+      }
+    } else {
+      console.warn('Reel not found for getlate_post_id:', postId);
     }
 
     return new Response(JSON.stringify({
