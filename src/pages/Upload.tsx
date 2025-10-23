@@ -389,26 +389,25 @@ const Upload = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {accounts.map((account) => (
-                    <div
+                    <label
                       key={account._id}
                       className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
                         selectedPlatforms.includes(account._id)
                           ? 'border-primary bg-primary/5'
                           : 'hover:border-primary/50'
                       }`}
-                      onClick={() => togglePlatform(account._id)}
                     >
                       <Checkbox
                         checked={selectedPlatforms.includes(account._id)}
                         onCheckedChange={() => togglePlatform(account._id)}
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 pointer-events-none">
                         <p className="font-medium text-sm">
                           {account.platform.charAt(0).toUpperCase() + account.platform.slice(1)}
                         </p>
                         <p className="text-xs text-muted-foreground">@{account.username}</p>
                       </div>
-                    </div>
+                    </label>
                   ))}
                 </div>
               )}
