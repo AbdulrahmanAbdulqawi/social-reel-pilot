@@ -116,21 +116,40 @@ Deno.serve(async (req) => {
         console.log('Calling GetLate connect URL:', connectUrl);
 
         const res = await fetch(connectUrl, {
-          redirect: 'manual',
-          headers: { 'Authorization': `Bearer ${getlateApiKey}` },
+          redirect: 'follow', // Follow redirects automatically
+          headers: { 
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json'
+          },
         });
 
         console.log('GetLate response status:', res.status, res.statusText);
+        const responseText = await res.text();
+        console.log('GetLate response body:', responseText);
 
-        if (!res.ok && res.status !== 302) {
-          const errText = await res.text();
-          console.error('GetLate error response:', errText);
-          throw new Error(`Failed to get connect URL: ${res.status} ${res.statusText} - ${errText}`);
+        if (!res.ok) {
+          console.error('GetLate error response:', responseText);
+          throw new Error(`Failed to get connect URL: ${res.status} ${res.statusText} - ${responseText}`);
         }
 
-        // Extract redirect URL
-        const authUrl = res.headers.get('location') || res.url;
-        console.log('Got auth URL:', authUrl);
+        // Check if response is JSON with a URL
+        let authUrl: string;
+        try {
+          const jsonData = JSON.parse(responseText);
+          if (jsonData.url) {
+            authUrl = jsonData.url;
+          } else if (jsonData.authUrl) {
+            authUrl = jsonData.authUrl;
+          } else {
+            // If no URL in JSON, use the final URL after redirects
+            authUrl = res.url;
+          }
+        } catch {
+          // If not JSON, use the final URL after redirects
+          authUrl = res.url;
+        }
+
+        console.log('Final auth URL:', authUrl);
         return jsonResponse({ url: authUrl });
       }
 
