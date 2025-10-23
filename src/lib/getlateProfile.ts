@@ -4,6 +4,7 @@ export interface GetLateProfile {
   _id: string;
   name: string;
   description?: string;
+  createdAt?: string;
 }
 
 /**
@@ -27,6 +28,38 @@ export async function createGetLateProfile(): Promise<GetLateProfile | null> {
 }
 
 /**
+ * List all GetLate profiles
+ */
+export async function listGetLateProfiles(): Promise<GetLateProfile[]> {
+  try {
+    const { data, error } = await supabase.functions.invoke('getlate-connect', {
+      body: { action: 'list-profiles' }
+    });
+
+    if (error) throw error;
+
+    return (data?.profiles as GetLateProfile[]) || [];
+  } catch (error) {
+    console.error('Error listing GetLate profiles:', error);
+    return [];
+  }
+}
+
+/** Get the most recently created GetLate profile */
+export async function getLatestGetLateProfile(): Promise<GetLateProfile | null> {
+  const profiles = await listGetLateProfiles();
+  if (!profiles.length) return null;
+  // Prefer sorting by createdAt if available, else take last
+  const withDates = profiles.filter(p => !!(p as any).createdAt);
+  if (withDates.length === profiles.length) {
+    return profiles
+      .slice()
+      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+  }
+  return profiles[profiles.length - 1];
+}
+
+/**
  * Gets the GetLate profile ID for the current user from their Supabase profile
  * @returns The profile ID or null if not found
  */
@@ -39,11 +72,11 @@ export async function getUserGetLateProfileId(): Promise<string | null> {
       .from('profiles')
       .select('getlate_profile_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) throw profileError;
 
-    return profile?.getlate_profile_id || null;
+    return (profile as any)?.getlate_profile_id || null;
   } catch (error) {
     console.error('Error getting user GetLate profile ID:', error);
     return null;
@@ -75,47 +108,21 @@ export async function linkGetLateProfileToUser(getlateProfileId: string): Promis
 }
 
 /**
- * Lists all GetLate profiles (mainly for debugging)
- * @returns Array of profiles or empty array if failed
- */
-export async function listGetLateProfiles(): Promise<GetLateProfile[]> {
-  try {
-    const { data, error } = await supabase.functions.invoke('getlate-connect', {
-      body: { action: 'list-profiles' }
-    });
-
-    if (error) throw error;
-
-    return (data?.profiles as GetLateProfile[]) || [];
-  } catch (error) {
-    console.error('Error listing GetLate profiles:', error);
-    return [];
-  }
-}
-
-/**
  * Ensures the current user has a GetLate profile, creating one if needed
- * @returns The profile ID or null if failed
+ * Strategy: create -> fetch latest -> link
  */
 export async function ensureUserHasGetLateProfile(): Promise<string | null> {
-  // Check if user already has a profile ID
+  // 1) Return if already linked
   let profileId = await getUserGetLateProfileId();
-  
-  if (profileId) {
-    return profileId;
-  }
+  if (profileId) return profileId;
 
-  // Create a new profile
-  const newProfile = await createGetLateProfile();
-  if (!newProfile) {
-    return null;
-  }
+  // 2) Try to create a new profile
+  await createGetLateProfile();
 
-  // Link it to the user
-  const linked = await linkGetLateProfileToUser(newProfile._id);
-  if (!linked) {
-    return null;
-  }
+  // 3) Fetch the latest profile and link it
+  const latest = await getLatestGetLateProfile();
+  if (!latest?._id) return null;
 
-  return newProfile._id;
+  const linked = await linkGetLateProfileToUser(latest._id);
+  return linked ? latest._id : null;
 }

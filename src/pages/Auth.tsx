@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { createGetLateProfile, linkGetLateProfileToUser } from "@/lib/getlateProfile";
+import { ensureUserHasGetLateProfile } from "@/lib/getlateProfile";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
@@ -109,23 +109,11 @@ const Auth = () => {
         throw new Error('Profile creation timed out. Please try logging in.');
       }
 
-      // Step 3: Create GetLate profile for the user
-      const newProfile = await createGetLateProfile();
+      // Step 3: Ensure a GetLate profile exists and link it to the user
+      const linkedId = await ensureUserHasGetLateProfile();
 
-      if (!newProfile) {
-        console.error('Failed to create GetLate profile');
-        toast.warning('Account created, but profile setup incomplete. Please visit Settings to complete setup.');
-        return;
-      }
-
-      // Step 4: Link GetLate profile to user
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ getlate_profile_id: newProfile._id })
-        .eq('id', authData.user.id);
-
-      if (updateError) {
-        console.error('Failed to link GetLate profile:', updateError);
+      if (!linkedId) {
+        console.error('Failed to link GetLate profile');
         toast.warning('Account created, but profile linking failed. Please visit Settings to complete setup.');
       } else {
         toast.success("Account created successfully! You can now connect your social media accounts.");
