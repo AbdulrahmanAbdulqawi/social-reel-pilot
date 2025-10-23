@@ -25,45 +25,41 @@ interface GetLateProfile {
 const Settings = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<GetLateAccount[]>([]);
   const [loading, setLoading] = useState(false);
-  const [profileId, setProfileId] = useState<string | null>(() => {
-    // Load cached profile ID from localStorage
-    return localStorage.getItem('getlate_profile_id');
-  });
-  const [initializingProfile, setInitializingProfile] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [initializingProfile, setInitializingProfile] = useState(true);
 
   useEffect(() => {
     // Check OAuth callback first
     handleOAuthCallback();
     
-    // Initialize profile in background
-    if (!profileId) {
-      initializeGetLateProfile();
-    } else {
-      // If we have a cached profile ID, fetch accounts immediately
-      fetchConnectedAccounts(profileId);
-    }
+    // Initialize profile from database
+    initializeGetLateProfile();
   }, []);
 
   const initializeGetLateProfile = async () => {
     setInitializingProfile(true);
     try {
-      // First, try to get existing profiles
-      const { data: profilesData, error: profilesError } = await supabase.functions.invoke('getlate-connect', {
-        body: { action: 'list-profiles' }
-      });
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error('User not authenticated');
+      }
 
-      if (profilesError) throw profilesError;
+      // Check if user already has a GetLate profile ID stored
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('getlate_profile_id')
+        .eq('id', user.id)
+        .single();
 
-      const profiles = profilesData?.profiles as GetLateProfile[] || [];
-      
-      if (profiles.length > 0) {
-        // Use the first profile
-        const profile = profiles[0];
-        setProfileId(profile._id);
-        localStorage.setItem('getlate_profile_id', profile._id);
-        await fetchConnectedAccounts(profile._id);
+      if (profileError) throw profileError;
+
+      if (profile?.getlate_profile_id) {
+        // User already has a GetLate profile
+        setProfileId(profile.getlate_profile_id);
+        await fetchConnectedAccounts(profile.getlate_profile_id);
       } else {
-        // Create a new profile
+        // Create a new GetLate profile for this user
         const { data: newProfileData, error: createError } = await supabase.functions.invoke('getlate-connect', {
           body: { action: 'create-profile' }
         });
@@ -72,8 +68,15 @@ const Settings = () => {
 
         const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
         if (newProfile) {
+          // Store the GetLate profile ID in the user's Supabase profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ getlate_profile_id: newProfile._id })
+            .eq('id', user.id);
+
+          if (updateError) throw updateError;
+
           setProfileId(newProfile._id);
-          localStorage.setItem('getlate_profile_id', newProfile._id);
           await fetchConnectedAccounts(newProfile._id);
         }
       }
