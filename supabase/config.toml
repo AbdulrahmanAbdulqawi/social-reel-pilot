@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.schedule-worker]
 verify_jwt = false
+
+[functions.getlate-connect]
+verify_jwt = true
+
+[functions.getlate-post]
+verify_jwt = true

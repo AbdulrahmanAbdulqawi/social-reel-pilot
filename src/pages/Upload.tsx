@@ -21,21 +21,6 @@ interface GetLateAccount {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
-const uploadSchema = z.object({
-  title: z.string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
-  caption: z.string()
-    .max(2000, "Caption must be less than 2000 characters")
-    .optional(),
-  hashtags: z.string()
-    .max(500, "Hashtags too long")
-    .optional(),
-  platform: z.enum(["instagram", "tiktok", "youtube"], {
-    errorMap: () => ({ message: "Please select a platform" }),
-  }),
-});
-
 const Upload = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -354,7 +339,7 @@ const Upload = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading} className="flex-1">
+              <Button type="submit" disabled={loading || !videoFile || !selectedAccountId || loadingAccounts} className="flex-1">
                 {loading ? "Creating..." : "Create Reel"}
               </Button>
             </div>
