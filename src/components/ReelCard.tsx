@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Eye, Heart, MessageCircle, MoreVertical } from "lucide-react";
+import { Calendar, Eye, Heart, MessageCircle, MoreVertical, Share2, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,22 +44,57 @@ const platformColors = {
 export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
   const statusColor = statusColors[reel.status as keyof typeof statusColors] || statusColors.draft;
   const platformColor = platformColors[reel.platform as keyof typeof platformColors] || "bg-muted";
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
+  useEffect(() => {
+    // Fetch analytics if post is posted and has getlate_post_id
+    const fetchAnalytics = async () => {
+      if (reel.status !== 'posted') return;
+      
+      try {
+        setLoadingAnalytics(true);
+        const { data: reelData } = await supabase
+          .from('reels')
+          .select('getlate_post_id')
+          .eq('id', reel.id)
+          .single();
+
+        if (reelData?.getlate_post_id) {
+          const { data } = await supabase.functions.invoke('getlate-analytics', {
+            body: { postId: reelData.getlate_post_id }
+          });
+
+          if (data?.analytics) {
+            setAnalytics(data.analytics);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch analytics:', error);
+      } finally {
+        setLoadingAnalytics(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [reel.id, reel.status]);
 
   return (
-    <Card className="overflow-hidden hover:shadow-card transition-shadow">
-      <div className="aspect-video bg-muted relative">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/20">
+      <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
         {reel.thumbnail_url ? (
           <img
             src={reel.thumbnail_url}
             alt={reel.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Eye className="w-12 h-12 text-muted-foreground/20" />
+            <TrendingUp className="w-16 h-16 text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-300" />
           </div>
         )}
-        <Badge className={`absolute top-2 right-2 ${statusColor}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Badge className={`absolute top-3 right-3 ${statusColor} shadow-lg`}>
           {reel.status}
         </Badge>
       </div>
@@ -114,21 +151,54 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
       </CardContent>
 
       {reel.status === "posted" && (
-        <CardFooter className="border-t p-4 bg-muted/30">
-          <div className="flex gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Eye className="w-4 h-4" />
-              <span>1.2K</span>
+        <CardFooter className="border-t p-4 bg-gradient-to-br from-muted/20 to-muted/5">
+          {loadingAnalytics ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <span>Loading analytics...</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Heart className="w-4 h-4" />
-              <span>234</span>
+          ) : analytics ? (
+            <div className="flex gap-6 text-sm w-full">
+              <div className="flex items-center gap-2 group">
+                <div className="p-1.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                  <Eye className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <div className="font-semibold">{analytics.views?.toLocaleString() || 0}</div>
+                  <div className="text-xs text-muted-foreground">Views</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 group">
+                <div className="p-1.5 rounded-lg bg-pink-500/10 group-hover:bg-pink-500/20 transition-colors">
+                  <Heart className="w-4 h-4 text-pink-600" />
+                </div>
+                <div>
+                  <div className="font-semibold">{analytics.likes?.toLocaleString() || 0}</div>
+                  <div className="text-xs text-muted-foreground">Likes</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 group">
+                <div className="p-1.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                  <MessageCircle className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <div className="font-semibold">{analytics.comments?.toLocaleString() || 0}</div>
+                  <div className="text-xs text-muted-foreground">Comments</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 group">
+                <div className="p-1.5 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
+                  <Share2 className="w-4 h-4 text-purple-600" />
+                </div>
+                <div>
+                  <div className="font-semibold">{analytics.shares?.toLocaleString() || 0}</div>
+                  <div className="text-xs text-muted-foreground">Shares</div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <MessageCircle className="w-4 h-4" />
-              <span>45</span>
-            </div>
-          </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">No analytics available yet</div>
+          )}
         </CardFooter>
       )}
     </Card>
