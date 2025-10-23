@@ -23,47 +23,48 @@ interface AnalyticsData {
 }
 
 const Analytics = () => {
-  const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    totalShares: 0,
+    avgEngagementRate: 0,
+    platformBreakdown: [],
+    topPosts: [],
+  });
 
   useEffect(() => {
+    // Fetch analytics in background
     fetchAnalytics();
+
+    // Set up realtime subscription for reactive updates
+    const channel = supabase
+      .channel('analytics-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reel_analytics'
+        },
+        () => {
+          // Refetch analytics when data changes
+          fetchAnalytics();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchAnalytics = async () => {
     try {
-      setLoading(true);
+      setLoadingStats(true);
       
-      // Fetch all posted reels with their GetLate post IDs
-      const { data: reels, error: reelsError } = await supabase
-        .from("reels")
-        .select("*")
-        .eq("status", "posted")
-        .not("getlate_post_id", "is", null);
-
-      if (reelsError) throw reelsError;
-
-      // Trigger analytics fetch from GetLate for each post
-      if (reels && reels.length > 0) {
-        console.log(`Fetching fresh analytics from GetLate for ${reels.length} posts`);
-        
-        await Promise.all(
-          reels.map(async (reel) => {
-            try {
-              await supabase.functions.invoke("getlate-analytics", {
-                body: { postId: reel.getlate_post_id },
-              });
-            } catch (error) {
-              console.error(`Failed to fetch analytics for post ${reel.id}:`, error);
-            }
-          })
-        );
-
-        // Wait a moment for analytics to be stored
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      // Now fetch updated analytics from database
+      // First, fetch current analytics from database immediately
       const { data: reelsWithAnalytics, error: analyticsError } = await supabase
         .from("reels")
         .select(`
@@ -74,84 +75,114 @@ const Analytics = () => {
 
       if (analyticsError) throw analyticsError;
 
-      if (!reelsWithAnalytics || reelsWithAnalytics.length === 0) {
-        setAnalytics({
-          totalViews: 0,
-          totalLikes: 0,
-          totalComments: 0,
-          totalShares: 0,
-          avgEngagementRate: 0,
-          platformBreakdown: [],
-          topPosts: [],
-        });
-        return;
+      // Calculate and show current analytics immediately
+      if (reelsWithAnalytics && reelsWithAnalytics.length > 0) {
+        const calculatedAnalytics = calculateAnalytics(reelsWithAnalytics);
+        setAnalytics(calculatedAnalytics);
       }
+      
+      setLoadingStats(false);
 
-      // Calculate total analytics
-      let totalViews = 0;
-      let totalLikes = 0;
-      let totalComments = 0;
-      let totalShares = 0;
-      const platformStats: Record<string, number> = {};
+      // Then trigger fresh fetch from GetLate in background
+      const { data: reels } = await supabase
+        .from("reels")
+        .select("*")
+        .eq("status", "posted")
+        .not("getlate_post_id", "is", null);
 
-      reelsWithAnalytics.forEach((reel: any) => {
-        const analytics = reel.reel_analytics || [];
-        analytics.forEach((analytic: any) => {
-          totalViews += analytic.views || 0;
-          totalLikes += analytic.likes || 0;
-          totalComments += analytic.comments || 0;
-          totalShares += analytic.shares || 0;
-        });
-
-        // Track platform stats
-        if (reel.platforms && Array.isArray(reel.platforms)) {
-          reel.platforms.forEach((platform: string) => {
-            platformStats[platform] = (platformStats[platform] || 0) + (analytics[0]?.views || 0);
-          });
-        }
-      });
-
-      // Calculate engagement rate
-      const totalEngagements = totalLikes + totalComments + totalShares;
-      const avgEngagementRate = totalViews > 0 ? (totalEngagements / totalViews) * 100 : 0;
-
-      // Prepare platform breakdown
-      const totalPlatformViews = Object.values(platformStats).reduce((a, b) => a + b, 0);
-      const platformBreakdown = Object.entries(platformStats).map(([platform, views]) => ({
-        platform,
-        views,
-        percentage: totalPlatformViews > 0 ? (views / totalPlatformViews) * 100 : 0,
-      }));
-
-      // Get top posts
-      const postsWithAnalytics = reelsWithAnalytics
-        .map((reel: any) => {
-          const analytics = reel.reel_analytics?.[0] || {};
-          const views = analytics.views || 0;
-          const engagements = (analytics.likes || 0) + (analytics.comments || 0) + (analytics.shares || 0);
-          return {
-            title: reel.title || "Untitled",
-            views,
-            engagementRate: views > 0 ? (engagements / views) * 100 : 0,
-          };
-        })
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 3);
-
-      setAnalytics({
-        totalViews,
-        totalLikes,
-        totalComments,
-        totalShares,
-        avgEngagementRate,
-        platformBreakdown,
-        topPosts: postsWithAnalytics,
-      });
+      if (reels && reels.length > 0) {
+        // Fetch analytics from GetLate without blocking UI
+        Promise.all(
+          reels.map(async (reel) => {
+            try {
+              await supabase.functions.invoke("getlate-analytics", {
+                body: { postId: reel.getlate_post_id },
+              });
+            } catch (error) {
+              console.error(`Failed to fetch analytics for post ${reel.id}:`, error);
+            }
+          })
+        );
+      }
     } catch (error) {
       console.error("Error fetching analytics:", error);
-    } finally {
-      setLoading(false);
+      setLoadingStats(false);
     }
+  };
+
+  const calculateAnalytics = (reelsWithAnalytics: any[]): AnalyticsData => {
+    if (!reelsWithAnalytics || reelsWithAnalytics.length === 0) {
+      return {
+        totalViews: 0,
+        totalLikes: 0,
+        totalComments: 0,
+        totalShares: 0,
+        avgEngagementRate: 0,
+        platformBreakdown: [],
+        topPosts: [],
+      };
+    }
+
+    // Calculate total analytics
+    let totalViews = 0;
+    let totalLikes = 0;
+    let totalComments = 0;
+    let totalShares = 0;
+    const platformStats: Record<string, number> = {};
+
+    reelsWithAnalytics.forEach((reel: any) => {
+      const analytics = reel.reel_analytics || [];
+      analytics.forEach((analytic: any) => {
+        totalViews += analytic.views || 0;
+        totalLikes += analytic.likes || 0;
+        totalComments += analytic.comments || 0;
+        totalShares += analytic.shares || 0;
+      });
+
+      // Track platform stats
+      if (reel.platforms && Array.isArray(reel.platforms)) {
+        reel.platforms.forEach((platform: string) => {
+          platformStats[platform] = (platformStats[platform] || 0) + (analytics[0]?.views || 0);
+        });
+      }
+    });
+
+    // Calculate engagement rate
+    const totalEngagements = totalLikes + totalComments + totalShares;
+    const avgEngagementRate = totalViews > 0 ? (totalEngagements / totalViews) * 100 : 0;
+
+    // Prepare platform breakdown
+    const totalPlatformViews = Object.values(platformStats).reduce((a, b) => a + b, 0);
+    const platformBreakdown = Object.entries(platformStats).map(([platform, views]) => ({
+      platform,
+      views,
+      percentage: totalPlatformViews > 0 ? (views / totalPlatformViews) * 100 : 0,
+    }));
+
+    // Get top posts
+    const postsWithAnalytics = reelsWithAnalytics
+      .map((reel: any) => {
+        const analytics = reel.reel_analytics?.[0] || {};
+        const views = analytics.views || 0;
+        const engagements = (analytics.likes || 0) + (analytics.comments || 0) + (analytics.shares || 0);
+        return {
+          title: reel.title || "Untitled",
+          views,
+          engagementRate: views > 0 ? (engagements / views) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 3);
+
+    return {
+      totalViews,
+      totalLikes,
+      totalComments,
+      totalShares,
+      avgEngagementRate,
+      platformBreakdown,
+      topPosts: postsWithAnalytics,
+    };
   };
 
   const formatNumber = (num: number) => {
@@ -170,31 +201,6 @@ const Analytics = () => {
     return colors[platform.toLowerCase()] || "bg-primary";
   };
 
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6">
-        <div>
-          <Skeleton className="h-10 w-48 mb-2" />
-          <Skeleton className="h-5 w-96" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-20 mb-2" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!analytics) return null;
 
   const stats = [
     {
@@ -234,7 +240,7 @@ const Analytics = () => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         {stats.map((stat, index) => (
-          <Card key={stat.title} className="animate-fade-in" style={{ animationDelay: `${0.1 + index * 0.05}s` }}>
+          <Card key={stat.title} className="animate-fade-in hover-scale" style={{ animationDelay: `${0.1 + index * 0.05}s` }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -242,28 +248,49 @@ const Analytics = () => {
               <stat.icon className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.detail}</p>
+              {loadingStats ? (
+                <>
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold animate-scale-in">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.detail}</p>
+                </>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader>
             <CardTitle>Platform Performance</CardTitle>
             <CardDescription>Views by platform</CardDescription>
           </CardHeader>
           <CardContent>
-            {analytics.platformBreakdown.length === 0 ? (
+            {loadingStats ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : analytics.platformBreakdown.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
                 No platform data available yet
               </p>
             ) : (
               <div className="space-y-4">
-                {analytics.platformBreakdown.map((platform) => (
-                  <div key={platform.platform}>
+                {analytics.platformBreakdown.map((platform, index) => (
+                  <div key={platform.platform} className="animate-fade-in" style={{ animationDelay: `${0.4 + index * 0.1}s` }}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium capitalize">{platform.platform}</span>
                       <span className="text-sm text-muted-foreground">
@@ -272,8 +299,11 @@ const Analytics = () => {
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${getPlatformColor(platform.platform)}`}
-                        style={{ width: `${platform.percentage}%` }}
+                        className={`h-full ${getPlatformColor(platform.platform)} transition-all duration-500 ease-out`}
+                        style={{ 
+                          width: `${platform.percentage}%`,
+                          animation: `slide-in-right 0.8s ease-out ${0.4 + index * 0.1}s both`
+                        }}
                       />
                     </div>
                   </div>
@@ -283,20 +313,33 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover-scale">
           <CardHeader>
             <CardTitle>Top Performing Posts</CardTitle>
             <CardDescription>Based on views and engagement</CardDescription>
           </CardHeader>
           <CardContent>
-            {analytics.topPosts.length === 0 ? (
+            {loadingStats ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-3 border rounded-lg">
+                    <Skeleton className="h-4 w-32 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : analytics.topPosts.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
                 No posts published yet
               </p>
             ) : (
               <div className="space-y-4">
                 {analytics.topPosts.map((post, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div 
+                    key={i} 
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-all duration-200 animate-fade-in hover-scale"
+                    style={{ animationDelay: `${0.4 + i * 0.1}s` }}
+                  >
                     <div>
                       <p className="font-medium">{post.title}</p>
                       <p className="text-sm text-muted-foreground">{formatNumber(post.views)} views</p>
