@@ -1,143 +1,181 @@
+// --- Config & CORS ---
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 const GETLATE_API_URL = 'https://getlate.dev/api/v1';
 
+// --- Main Handler ---
 Deno.serve(async (req) => {
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const getlateApiKey = 'sk_495e59b9f01aa4bd20d1c432be38d7923e930d8b29c8500341f171cc82d336f6'
-    console.log('GetLate API key present:', !!getlateApiKey);
+    // Load API key (with fallback to multiple env vars)
+    const getlateApiKey =
+      Deno.env.get('GETLATE_API_KEY') ||
+      Deno.env.get('Late_API_KEY') ||
+      Deno.env.get('LATE_API_KEY');
+
     if (!getlateApiKey) {
-      throw new Error('GetLate API key not configured');
+      throw new Error('GetLate API key not configured in environment');
     }
 
-    const { action, platform, profileId } = await req.json();
+    // Parse JSON body safely
+    let body: any = {};
+    if (req.method === 'POST') {
+      try {
+        body = await req.json();
+      } catch {
+        throw new Error('Invalid or missing JSON body');
+      }
+    }
 
-    console.log('GetLate Connect Request:', { action, platform, profileId });
+    const { action, platform, profileId } = body || {};
 
-    // Handle different actions
+    console.log('GetLate Request:', { method: req.method, action, platform, profileId });
+
+    // --- Actions ---
     switch (action) {
+      /**
+       * 1️⃣ List all profiles
+       */
       case 'list-profiles': {
-        const response = await fetch(`${GETLATE_API_URL}/profiles`, {
+        const res = await fetch(`${GETLATE_API_URL}/profiles`, {
           headers: {
             'Authorization': `Bearer ${getlateApiKey}`,
             'Content-Type': 'application/json',
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to list profiles: ${response.statusText}`);
+        if (!res.ok) {
+          throw new Error(`Failed to list profiles: ${res.status} ${res.statusText}`);
         }
 
-        const data = await response.json();
-        return new Response(JSON.stringify(data), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        const data = await res.json();
+        return jsonResponse(data);
       }
 
+      /**
+       * 2️⃣ Create a new profile
+       */
       case 'create-profile': {
-        const response = await fetch(`${GETLATE_API_URL}/profiles`, {
+        const payload = {
+          name: 'Social Reel Pilot',
+          description: 'Automated social media posting',
+          color: '#4ade80',
+        };
+
+        const res = await fetch(`${GETLATE_API_URL}/profiles`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${getlateApiKey}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            name: 'Social Reel Pilot',
-            description: 'Automated social media posting',
-            color: '#4ade80'
-          }),
+          body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to create profile: ${errorText}`);
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to create profile: ${res.status} ${res.statusText} - ${errText}`);
         }
 
-        const data = await response.json();
-        return new Response(JSON.stringify(data), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        const data = await res.json();
+        return jsonResponse(data);
       }
 
+      /**
+       * 3️⃣ Get Connect URL for a platform
+       */
       case 'get-connect-url': {
         if (!platform || !profileId) {
-          throw new Error('Platform and profileId required for connect URL');
+          throw new Error('Both "platform" and "profileId" are required for connect URL');
         }
 
-        // Try to build a redirect back to app settings (optional)
+        // Build optional redirect URL to settings page
         const referer = req.headers.get('origin') || req.headers.get('referer') || '';
         let settingsUrl = '';
         if (referer) {
           try {
             const u = new URL(referer);
             settingsUrl = `${u.origin}/settings`;
-          } catch (_) {}
+          } catch (_) {
+            console.warn('Invalid referer URL, skipping redirect');
+          }
         }
 
-        const baseUrl = `${GETLATE_API_URL}/connect/${platform.toLowerCase()}?profileId=${profileId}`;
-        const connectUrl = settingsUrl ? `${baseUrl}&redirect_url=${encodeURIComponent(settingsUrl)}` : baseUrl;
+        const connectBase = `${GETLATE_API_URL}/connect/${encodeURIComponent(platform.toLowerCase())}?profileId=${encodeURIComponent(profileId)}`;
+        const connectUrl = settingsUrl
+          ? `${connectBase}&redirect_url=${encodeURIComponent(settingsUrl)}`
+          : connectBase;
 
-        const response = await fetch(connectUrl, {
+        const res = await fetch(connectUrl, {
           redirect: 'manual',
+          headers: { 'Authorization': `Bearer ${getlateApiKey}` },
+        });
+
+        if (!res.ok && res.status !== 302) {
+          const errText = await res.text();
+          throw new Error(`Failed to get connect URL: ${res.status} ${res.statusText} - ${errText}`);
+        }
+
+        // Extract redirect URL
+        const authUrl = res.headers.get('location') || res.url;
+        return jsonResponse({ url: authUrl });
+      }
+
+      /**
+       * 4️⃣ List connected accounts for a profile
+       */
+      case 'list-accounts': {
+        if (!profileId) {
+          throw new Error('"profileId" is required to list accounts');
+        }
+
+        const res = await fetch(`${GETLATE_API_URL}/accounts?profileId=${encodeURIComponent(profileId)}`, {
           headers: {
             'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
           },
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to get connect URL: ${errorText}`);
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to list accounts: ${res.status} ${res.statusText} - ${errText}`);
         }
 
-        // GetLate returns a redirect response with Location header
-        const authUrl = response.headers.get('location') || response.url;
-        
-        return new Response(JSON.stringify({ url: authUrl }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        const data = await res.json();
+        return jsonResponse(data);
       }
 
-      case 'list-accounts': {
-        if (!profileId) {
-          throw new Error('ProfileId required for listing accounts');
-        }
-
-        const response = await fetch(
-          `${GETLATE_API_URL}/accounts?profileId=${profileId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${getlateApiKey}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to list accounts: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return new Response(JSON.stringify(data), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
+      /**
+       * 🚫 Default: Unknown action
+       */
       default:
-        throw new Error(`Unknown action: ${action}`);
+        return jsonError(`Unknown or missing action: ${action}`, 400);
     }
   } catch (error) {
-    console.error('GetLate Connect Error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('❌ GetLate API Error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown server error';
+    return jsonError(message, 500);
   }
 });
+
+// --- Helpers ---
+function jsonResponse(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function jsonError(message: string, status = 500) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
