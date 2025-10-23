@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, TrendingUp, Calendar, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { usePostStatusSync } from "@/hooks/usePostStatusSync";
 
 interface Reel {
   id: string;
@@ -27,8 +28,31 @@ const Dashboard = () => {
   const [editingReel, setEditingReel] = useState<Reel | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
+  // Enable automatic post status syncing
+  usePostStatusSync(true);
+
   useEffect(() => {
     fetchReels();
+    
+    // Set up realtime subscription for reels updates
+    const channel = supabase
+      .channel('reels-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reels'
+        },
+        () => {
+          fetchReels();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchReels = async () => {
