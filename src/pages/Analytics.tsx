@@ -34,8 +34,37 @@ const Analytics = () => {
     try {
       setLoading(true);
       
-      // Fetch all posted reels with their analytics
+      // Fetch all posted reels with their GetLate post IDs
       const { data: reels, error: reelsError } = await supabase
+        .from("reels")
+        .select("*")
+        .eq("status", "posted")
+        .not("getlate_post_id", "is", null);
+
+      if (reelsError) throw reelsError;
+
+      // Trigger analytics fetch from GetLate for each post
+      if (reels && reels.length > 0) {
+        console.log(`Fetching fresh analytics from GetLate for ${reels.length} posts`);
+        
+        await Promise.all(
+          reels.map(async (reel) => {
+            try {
+              await supabase.functions.invoke("getlate-analytics", {
+                body: { postId: reel.getlate_post_id },
+              });
+            } catch (error) {
+              console.error(`Failed to fetch analytics for post ${reel.id}:`, error);
+            }
+          })
+        );
+
+        // Wait a moment for analytics to be stored
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Now fetch updated analytics from database
+      const { data: reelsWithAnalytics, error: analyticsError } = await supabase
         .from("reels")
         .select(`
           *,
@@ -43,9 +72,9 @@ const Analytics = () => {
         `)
         .eq("status", "posted");
 
-      if (reelsError) throw reelsError;
+      if (analyticsError) throw analyticsError;
 
-      if (!reels || reels.length === 0) {
+      if (!reelsWithAnalytics || reelsWithAnalytics.length === 0) {
         setAnalytics({
           totalViews: 0,
           totalLikes: 0,
@@ -65,7 +94,7 @@ const Analytics = () => {
       let totalShares = 0;
       const platformStats: Record<string, number> = {};
 
-      reels.forEach((reel: any) => {
+      reelsWithAnalytics.forEach((reel: any) => {
         const analytics = reel.reel_analytics || [];
         analytics.forEach((analytic: any) => {
           totalViews += analytic.views || 0;
@@ -95,7 +124,7 @@ const Analytics = () => {
       }));
 
       // Get top posts
-      const postsWithAnalytics = reels
+      const postsWithAnalytics = reelsWithAnalytics
         .map((reel: any) => {
           const analytics = reel.reel_analytics?.[0] || {};
           const views = analytics.views || 0;
