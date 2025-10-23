@@ -47,28 +47,32 @@ const Upload = () => {
 
   const loadGetLateAccounts = async () => {
     try {
-      // Get profile first
-      const { data: profilesData, error: profilesError } = await supabase.functions.invoke('getlate-connect', {
-        body: { action: 'list-profiles' }
-      });
+      // Get user's profile to find their GetLate profile ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      if (profilesError) throw profilesError;
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('getlate_profile_id')
+        .eq('id', user.id)
+        .single();
 
-      const profiles = profilesData?.profiles || [];
-      if (profiles.length === 0) {
-        toast.error('No GetLate profile found. Please go to Settings to connect platforms.');
+      if (profileError) throw profileError;
+
+      const getlateProfileId = profileData?.getlate_profile_id;
+      if (!getlateProfileId) {
+        toast.error('No GetLate profile linked. Please go to Settings to connect platforms.');
         setLoadingAccounts(false);
         return;
       }
 
-      const profile = profiles[0];
-      setProfileId(profile._id);
+      setProfileId(getlateProfileId);
 
-      // Get connected accounts
+      // Get connected accounts using the user's profile ID
       const { data: accountsData, error: accountsError } = await supabase.functions.invoke('getlate-connect', {
         body: {
           action: 'list-accounts',
-          profileId: profile._id
+          profileId: getlateProfileId
         }
       });
 
