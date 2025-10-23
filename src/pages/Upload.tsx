@@ -6,10 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload as UploadIcon, X, Image as ImageIcon, Video, FileText } from "lucide-react";
+import { Upload as UploadIcon, X, Image as ImageIcon, Video, FileText, Instagram, Youtube, Facebook } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+
+// TikTok Icon Component
+const TikTokIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 interface GetLateAccount {
   _id: string;
@@ -392,27 +399,46 @@ const Upload = () => {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {accounts.map((account) => (
-                    <label
-                      key={account._id}
-                      className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                        selectedPlatforms.includes(account._id)
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:border-primary/50'
-                      }`}
-                    >
-                      <Checkbox
-                        checked={selectedPlatforms.includes(account._id)}
-                        onCheckedChange={() => togglePlatform(account._id)}
-                      />
-                      <div className="flex-1 pointer-events-none">
-                        <p className="font-medium text-sm">
-                          {account.platform.charAt(0).toUpperCase() + account.platform.slice(1)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">@{account.username}</p>
-                      </div>
-                    </label>
-                  ))}
+                  {accounts.map((account) => {
+                    const getPlatformIcon = (platform: string) => {
+                      const iconClass = "w-5 h-5";
+                      switch (platform.toLowerCase()) {
+                        case 'instagram':
+                          return <Instagram className={`${iconClass} text-pink-500`} />;
+                        case 'facebook':
+                          return <Facebook className={`${iconClass} text-blue-600`} />;
+                        case 'tiktok':
+                          return <TikTokIcon className={iconClass} />;
+                        case 'youtube':
+                          return <Youtube className={`${iconClass} text-red-500`} />;
+                        default:
+                          return null;
+                      }
+                    };
+
+                    return (
+                      <label
+                        key={account._id}
+                        className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                          selectedPlatforms.includes(account._id)
+                            ? 'border-primary bg-primary/5'
+                            : 'hover:border-primary/50'
+                        }`}
+                      >
+                        <Checkbox
+                          checked={selectedPlatforms.includes(account._id)}
+                          onCheckedChange={() => togglePlatform(account._id)}
+                        />
+                        {getPlatformIcon(account.platform)}
+                        <div className="flex-1 pointer-events-none">
+                          <p className="font-medium text-sm">
+                            {account.platform.charAt(0).toUpperCase() + account.platform.slice(1)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">@{account.username}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
