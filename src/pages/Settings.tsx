@@ -55,30 +55,49 @@ const Settings = () => {
       if (profileError) throw profileError;
 
       if (profile?.getlate_profile_id) {
-        // User already has a GetLate profile
+        // User already has a GetLate profile ID
         setProfileId(profile.getlate_profile_id);
         await fetchConnectedAccounts(profile.getlate_profile_id);
       } else {
-        // Create a new GetLate profile for this user
-        const { data: newProfileData, error: createError } = await supabase.functions.invoke('getlate-connect', {
-          body: { action: 'create-profile' }
+        // Try to get existing profiles from GetLate
+        const { data: profilesData, error: listError } = await supabase.functions.invoke('getlate-connect', {
+          body: { action: 'list-profiles' }
         });
 
-        if (createError) throw createError;
+        if (listError) throw listError;
 
-        const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
-        if (newProfile) {
-          // Store the GetLate profile ID in the user's Supabase profile
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ getlate_profile_id: newProfile._id })
-            .eq('id', user.id);
+        const profiles = profilesData?.profiles as GetLateProfile[] || [];
+        
+        let getlateProfileId: string;
 
-          if (updateError) throw updateError;
+        if (profiles.length > 0) {
+          // Use the first existing profile (shared across all app users)
+          getlateProfileId = profiles[0]._id;
+        } else {
+          // Create a new GetLate profile (first user in the app)
+          const { data: newProfileData, error: createError } = await supabase.functions.invoke('getlate-connect', {
+            body: { action: 'create-profile' }
+          });
 
-          setProfileId(newProfile._id);
-          await fetchConnectedAccounts(newProfile._id);
+          if (createError) throw createError;
+
+          const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
+          if (!newProfile) {
+            throw new Error('Failed to create GetLate profile');
+          }
+          getlateProfileId = newProfile._id;
         }
+
+        // Store the GetLate profile ID in the user's Supabase profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ getlate_profile_id: getlateProfileId })
+          .eq('id', user.id);
+
+        if (updateError) throw updateError;
+
+        setProfileId(getlateProfileId);
+        await fetchConnectedAccounts(getlateProfileId);
       }
     } catch (error) {
       console.error('Error initializing GetLate profile:', error);
