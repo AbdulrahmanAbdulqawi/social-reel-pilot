@@ -5,6 +5,7 @@ import { Instagram, Youtube, Facebook } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { ensureUserHasGetLateProfile } from "@/lib/getlateProfile";
 
 interface GetLateAccount {
   _id: string;
@@ -39,69 +40,17 @@ const Settings = () => {
   const initializeGetLateProfile = async () => {
     setInitializingProfile(true);
     try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error('User not authenticated');
+      const profileId = await ensureUserHasGetLateProfile();
+      
+      if (!profileId) {
+        throw new Error('Failed to initialize GetLate profile');
       }
 
-      // Check if user already has a GetLate profile ID stored
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('getlate_profile_id')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      if (profile?.getlate_profile_id) {
-        // User already has a GetLate profile ID
-        setProfileId(profile.getlate_profile_id);
-        await fetchConnectedAccounts(profile.getlate_profile_id);
-      } else {
-        // Try to get existing profiles from GetLate
-        const { data: profilesData, error: listError } = await supabase.functions.invoke('getlate-connect', {
-          body: { action: 'list-profiles' }
-        });
-
-        if (listError) throw listError;
-
-        const profiles = profilesData?.profiles as GetLateProfile[] || [];
-        
-        let getlateProfileId: string;
-
-        if (profiles.length > 0) {
-          // Use the first existing profile (shared across all app users)
-          getlateProfileId = profiles[0]._id;
-        } else {
-          // Create a new GetLate profile (first user in the app)
-          const { data: newProfileData, error: createError } = await supabase.functions.invoke('getlate-connect', {
-            body: { action: 'create-profile' }
-          });
-
-          if (createError) throw createError;
-
-          const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
-          if (!newProfile) {
-            throw new Error('Failed to create GetLate profile');
-          }
-          getlateProfileId = newProfile._id;
-        }
-
-        // Store the GetLate profile ID in the user's Supabase profile
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ getlate_profile_id: getlateProfileId })
-          .eq('id', user.id);
-
-        if (updateError) throw updateError;
-
-        setProfileId(getlateProfileId);
-        await fetchConnectedAccounts(getlateProfileId);
-      }
+      setProfileId(profileId);
+      await fetchConnectedAccounts(profileId);
     } catch (error) {
       console.error('Error initializing GetLate profile:', error);
-      toast.error('Failed to initialize GetLate');
+      toast.error('Failed to initialize GetLate. Please try refreshing the page.');
     } finally {
       setInitializingProfile(false);
       setLoading(false);

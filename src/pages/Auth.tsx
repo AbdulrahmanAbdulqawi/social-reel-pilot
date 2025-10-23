@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { createGetLateProfile, linkGetLateProfileToUser } from "@/lib/getlateProfile";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
@@ -65,23 +66,47 @@ const Auth = () => {
     setLoading(true);
     const redirectUrl = `${window.location.origin}/dashboard`;
     
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          username,
+    try {
+      // Step 1: Sign up the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            username,
+          },
         },
-      },
-    });
+      });
 
-    setLoading(false);
+      if (signUpError) throw signUpError;
+      
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Account created successfully!");
+      // Step 2: Create GetLate profile for the user
+      const newProfile = await createGetLateProfile();
+
+      if (!newProfile) {
+        console.error('Failed to create GetLate profile');
+        toast.warning('Account created, but profile setup incomplete. Please visit Settings to complete setup.');
+      } else {
+        // Step 3: Link GetLate profile to user
+        const linked = await linkGetLateProfileToUser(newProfile._id);
+
+        if (!linked) {
+          console.error('Failed to link GetLate profile');
+          toast.warning('Account created, but profile linking failed. Please visit Settings to complete setup.');
+        } else {
+          toast.success("Account created successfully! You can now connect your social media accounts.");
+        }
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      toast.error(error.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
     }
   };
 
