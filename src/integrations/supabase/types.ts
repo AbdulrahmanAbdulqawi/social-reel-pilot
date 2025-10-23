@@ -178,16 +178,64 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_type: Database["public"]["Enums"]["subscription_plan"]
+          posts_limit: number
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["subscription_plan"]
+          posts_limit?: number
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_type?: Database["public"]["Enums"]["subscription_plan"]
+          posts_limit?: number
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_user_create_post: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
+      get_remaining_posts: { Args: { user_id_param: string }; Returns: number }
     }
     Enums: {
       platform_type: "instagram" | "tiktok" | "youtube"
       reel_status: "draft" | "scheduled" | "posted" | "failed"
+      subscription_plan: "free_trial" | "premium"
+      subscription_status: "active" | "canceled" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -317,6 +365,8 @@ export const Constants = {
     Enums: {
       platform_type: ["instagram", "tiktok", "youtube"],
       reel_status: ["draft", "scheduled", "posted", "failed"],
+      subscription_plan: ["free_trial", "premium"],
+      subscription_status: ["active", "canceled", "expired"],
     },
   },
 } as const
