@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload as UploadIcon, Calendar } from "lucide-react";
+import { Upload as UploadIcon, X, Image as ImageIcon, Video, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 interface GetLateAccount {
   _id: string;
@@ -21,18 +21,23 @@ interface GetLateAccount {
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
+type MediaFile = {
+  file: File;
+  type: 'video' | 'image';
+  preview: string;
+};
+
 const Upload = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("");
-  const [platform, setPlatform] = useState<string>("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [accounts, setAccounts] = useState<GetLateAccount[]>([]);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
@@ -84,38 +89,67 @@ const Upload = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      
-      if (!file.type.startsWith("video/")) {
-        toast.error("Please select a video file");
-        return;
-      }
-      
+    if (!e.target.files) return;
+    
+    const files = Array.from(e.target.files);
+    const newMediaFiles: MediaFile[] = [];
+    
+    for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error("File size must be less than 100MB");
-        return;
+        toast.error(`${file.name} exceeds 100MB limit`);
+        continue;
       }
       
-      setVideoFile(file);
+      const isVideo = file.type.startsWith("video/");
+      const isImage = file.type.startsWith("image/");
+      
+      if (!isVideo && !isImage) {
+        toast.error(`${file.name} is not a valid image or video`);
+        continue;
+      }
+      
+      newMediaFiles.push({
+        file,
+        type: isVideo ? 'video' : 'image',
+        preview: URL.createObjectURL(file)
+      });
     }
+    
+    setMediaFiles(prev => [...prev, ...newMediaFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setMediaFiles(prev => {
+      const newFiles = [...prev];
+      URL.revokeObjectURL(newFiles[index].preview);
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+
+  const togglePlatform = (accountId: string) => {
+    setSelectedPlatforms(prev => 
+      prev.includes(accountId) 
+        ? prev.filter(id => id !== accountId)
+        : [...prev, accountId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedAccountId) {
-      toast.error("Please select a social media account");
-      return;
-    }
-
-    if (!videoFile) {
-      toast.error("Please select a video file");
+    if (selectedPlatforms.length === 0) {
+      toast.error("Please select at least one platform");
       return;
     }
 
     if (!title.trim()) {
       toast.error("Title is required");
+      return;
+    }
+
+    if (mediaFiles.length === 0 && !caption.trim()) {
+      toast.error("Please add media files or write a caption");
       return;
     }
 
@@ -125,24 +159,47 @@ const Upload = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Upload video file
-      const fileExt = videoFile.name.split('.').pop();
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      // Upload all media files
+      const mediaItems: Array<{ type: string; url: string }> = [];
+      
+      for (const media of mediaFiles) {
+        const fileExt = media.file.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("reels")
-        .upload(filePath, videoFile);
+        const { error: uploadError } = await supabase.storage
+          .from("reels")
+          .upload(filePath, media.file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("reels")
-        .getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabase.storage
+          .from("reels")
+          .getPublicUrl(filePath);
 
-      // Get selected account details
-      const selectedAccount = accounts.find(acc => acc._id === selectedAccountId);
-      if (!selectedAccount) {
-        throw new Error("Selected account not found");
+        mediaItems.push({
+          type: media.type,
+          url: publicUrl
+        });
+      }
+
+      // Get selected accounts
+      const selectedAccounts = accounts.filter(acc => selectedPlatforms.includes(acc._id));
+      if (selectedAccounts.length === 0) {
+        throw new Error("No valid accounts selected");
+      }
+
+      // Determine media type
+      const hasVideo = mediaItems.some(m => m.type === 'video');
+      const hasImage = mediaItems.some(m => m.type === 'image');
+      let mediaType: string;
+      if (mediaItems.length === 0) {
+        mediaType = 'text';
+      } else if (hasVideo && hasImage) {
+        mediaType = 'mixed';
+      } else if (hasVideo) {
+        mediaType = 'video';
+      } else {
+        mediaType = 'image';
       }
 
       // Combine date and time for scheduling
@@ -166,8 +223,11 @@ const Upload = () => {
           title,
           caption: caption || null,
           hashtags: hashtagsArray.length > 0 ? hashtagsArray : null,
-          platform: selectedAccount.platform as "instagram" | "tiktok" | "youtube",
-          video_url: publicUrl,
+          platforms: selectedAccounts.map(acc => acc.platform),
+          platform: selectedAccounts[0].platform as "instagram" | "tiktok" | "youtube",
+          media_type: mediaType,
+          media_items: mediaItems,
+          video_url: mediaItems[0]?.url || null,
           scheduled_at: scheduledFor,
           status: (scheduledFor ? "scheduled" : "draft") as "draft" | "scheduled" | "posted" | "failed",
         }])
@@ -176,18 +236,20 @@ const Upload = () => {
 
       if (insertError) throw insertError;
 
-      // Post to GetLate
-      toast.info("Posting to GetLate...");
+      // Post to GetLate with multiple platforms
+      toast.info(`Posting to ${selectedAccounts.length} platform(s)...`);
       
       const { data: postResult, error: postError } = await supabase.functions.invoke('getlate-post', {
         body: {
           reelId: reelData.id,
-          videoUrl: publicUrl,
+          mediaItems,
           title,
           caption,
           hashtags: hashtagsArray,
-          platform: selectedAccount.platform,
-          accountId: selectedAccountId,
+          platforms: selectedAccounts.map(acc => ({
+            platform: acc.platform,
+            accountId: acc._id
+          })),
           scheduledFor,
           timezone,
         }
@@ -203,10 +265,9 @@ const Upload = () => {
         throw postError;
       }
 
-      // The getlate-post function already updated the reel with GetLate post ID
       console.log('GetLate post result:', postResult);
 
-      toast.success(`Reel ${scheduledFor ? 'scheduled' : 'posted'} successfully via GetLate!`);
+      toast.success(`Content ${scheduledFor ? 'scheduled' : 'posted'} to ${selectedAccounts.length} platform(s)!`);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating reel:", error);
@@ -217,37 +278,71 @@ const Upload = () => {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Upload New Reel</CardTitle>
+          <CardTitle className="text-2xl">Create New Post</CardTitle>
           <CardDescription>
-            Create and schedule your social media content
+            Share your content across multiple platforms
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="video">Video File</Label>
-              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
+            {/* Media Upload Section */}
+            <div className="space-y-4">
+              <Label>Media Files (Optional)</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                 <input
-                  id="video"
+                  id="media"
                   type="file"
-                  accept="video/*"
+                  accept="image/*,video/*"
+                  multiple
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <label htmlFor="video" className="cursor-pointer">
-                  <UploadIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  {videoFile ? (
-                    <p className="text-sm font-medium">{videoFile.name}</p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Click to upload or drag and drop
-                    </p>
-                  )}
+                <label htmlFor="media" className="cursor-pointer">
+                  <div className="flex flex-col items-center gap-2">
+                    <UploadIcon className="w-10 h-10 text-muted-foreground" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Upload images or videos</p>
+                      <p className="text-xs text-muted-foreground">
+                        Multiple files supported • Max 100MB each
+                      </p>
+                    </div>
+                  </div>
                 </label>
               </div>
+
+              {/* Preview uploaded files */}
+              {mediaFiles.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {mediaFiles.map((media, index) => (
+                    <div key={index} className="relative group rounded-lg overflow-hidden border">
+                      {media.type === 'video' ? (
+                        <div className="aspect-video bg-muted flex items-center justify-center">
+                          <Video className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      ) : (
+                        <img 
+                          src={media.preview} 
+                          alt={`Preview ${index + 1}`}
+                          className="aspect-video object-cover w-full"
+                        />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <Badge variant="secondary" className="absolute bottom-2 left-2">
+                        {media.type}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -282,24 +377,40 @@ const Upload = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="account">Social Media Account *</Label>
-              <Select value={selectedAccountId} onValueChange={setSelectedAccountId} disabled={loadingAccounts} required>
-                <SelectTrigger>
-                  <SelectValue placeholder={loadingAccounts ? "Loading accounts..." : "Select account"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account._id} value={account._id}>
-                      {account.platform.charAt(0).toUpperCase() + account.platform.slice(1)} - @{account.username}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {!loadingAccounts && accounts.length === 0 && (
+            {/* Platform Selection */}
+            <div className="space-y-3">
+              <Label>Platforms to Post *</Label>
+              {loadingAccounts ? (
+                <p className="text-sm text-muted-foreground">Loading platforms...</p>
+              ) : accounts.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No accounts connected. <a href="/settings" className="text-primary underline">Go to Settings</a> to connect your platforms.
                 </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {accounts.map((account) => (
+                    <div
+                      key={account._id}
+                      className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                        selectedPlatforms.includes(account._id)
+                          ? 'border-primary bg-primary/5'
+                          : 'hover:border-primary/50'
+                      }`}
+                      onClick={() => togglePlatform(account._id)}
+                    >
+                      <Checkbox
+                        checked={selectedPlatforms.includes(account._id)}
+                        onCheckedChange={() => togglePlatform(account._id)}
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">
+                          {account.platform.charAt(0).toUpperCase() + account.platform.slice(1)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">@{account.username}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -333,8 +444,12 @@ const Upload = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || !videoFile || !selectedAccountId || loadingAccounts} className="flex-1">
-                {loading ? "Creating..." : "Create Reel"}
+              <Button 
+                type="submit" 
+                disabled={loading || selectedPlatforms.length === 0 || loadingAccounts}
+                className="flex-1"
+              >
+                {loading ? "Posting..." : `Post to ${selectedPlatforms.length || 0} Platform(s)`}
               </Button>
             </div>
           </form>

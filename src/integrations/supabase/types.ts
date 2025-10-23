@@ -119,7 +119,10 @@ export type Database = {
           getlate_post_id: string | null
           hashtags: string[] | null
           id: string
+          media_items: Json | null
+          media_type: string | null
           platform: Database["public"]["Enums"]["platform_type"]
+          platforms: string[] | null
           posted_at: string | null
           posting_method: string | null
           scheduled_at: string | null
@@ -136,7 +139,10 @@ export type Database = {
           getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
+          media_items?: Json | null
+          media_type?: string | null
           platform: Database["public"]["Enums"]["platform_type"]
+          platforms?: string[] | null
           posted_at?: string | null
           posting_method?: string | null
           scheduled_at?: string | null
@@ -153,7 +159,10 @@ export type Database = {
           getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
+          media_items?: Json | null
+          media_type?: string | null
           platform?: Database["public"]["Enums"]["platform_type"]
+          platforms?: string[] | null
           posted_at?: string | null
           posting_method?: string | null
           scheduled_at?: string | null

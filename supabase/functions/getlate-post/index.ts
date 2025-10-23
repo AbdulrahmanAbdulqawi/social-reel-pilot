@@ -9,12 +9,11 @@ const GETLATE_API_URL = 'https://getlate.dev/api/v1';
 
 interface PostRequest {
   reelId: string;
-  videoUrl: string;
+  mediaItems?: Array<{ type: string; url: string }>;
   title: string;
   caption?: string;
   hashtags?: string[];
-  platform: string;
-  accountId: string;
+  platforms: Array<{ platform: string; accountId: string }>;
   scheduledFor?: string;
   timezone?: string;
 }
@@ -43,43 +42,48 @@ Deno.serve(async (req) => {
       content += `\n\n${postData.hashtags.map(tag => `#${tag}`).join(' ')}`;
     }
 
-    // Build platform-specific data
-    const platformSpecificData: any = {};
-    
-    switch (postData.platform.toLowerCase()) {
-      case 'instagram':
-        platformSpecificData.contentType = 'reel';
-        break;
-      case 'tiktok':
-        platformSpecificData.tiktokSettings = {
-          privacy_level: 'PUBLIC_TO_EVERYONE',
-          allow_comment: true,
-          allow_duet: true,
-          allow_stitch: true,
-        };
-        break;
-      case 'youtube':
-        platformSpecificData.contentType = 'short';
-        platformSpecificData.visibility = 'public';
-        break;
-    }
+    // Build platforms array with platform-specific settings
+    const platforms = postData.platforms.map(({ platform, accountId }) => {
+      const platformSpecificData: any = {};
+      
+      switch (platform.toLowerCase()) {
+        case 'instagram':
+          // Determine content type based on media
+          if (postData.mediaItems && postData.mediaItems.length > 0) {
+            const hasVideo = postData.mediaItems.some(m => m.type === 'video');
+            platformSpecificData.contentType = hasVideo ? 'reel' : 'post';
+          } else {
+            platformSpecificData.contentType = 'post'; // text only
+          }
+          break;
+        case 'tiktok':
+          platformSpecificData.tiktokSettings = {
+            privacy_level: 'PUBLIC_TO_EVERYONE',
+            allow_comment: true,
+            allow_duet: true,
+            allow_stitch: true,
+          };
+          break;
+        case 'youtube':
+          platformSpecificData.contentType = 'short';
+          platformSpecificData.visibility = 'public';
+          break;
+      }
+
+      return {
+        platform: platform.toLowerCase(),
+        accountId,
+        platformSpecificData,
+      };
+    });
 
     // Build the post request body
     const requestBody: any = {
       content,
-      platforms: [
-        {
-          platform: postData.platform.toLowerCase(),
-          accountId: postData.accountId,
-          platformSpecificData,
-        }
-      ],
-      mediaItems: [
-        {
-          type: 'video',
-          url: postData.videoUrl,
-        }
-      ],
+      platforms,
+      mediaItems: postData.mediaItems && postData.mediaItems.length > 0 
+        ? postData.mediaItems
+        : [], // Empty array for text-only posts
     };
 
     // Add scheduling if provided
