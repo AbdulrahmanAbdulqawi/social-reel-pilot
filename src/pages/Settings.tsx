@@ -13,6 +13,7 @@ interface GetLateAccount {
   displayName: string;
   isActive: boolean;
   profileId: string;
+  profilePicture?: string;
 }
 
 interface GetLateProfile {
@@ -161,7 +162,32 @@ const Settings = () => {
     const account = connectedAccounts.find(
       acc => acc.platform.toLowerCase() === platform.toLowerCase() && acc.isActive
     );
-    return account ? `@${account.username}` : null;
+    return account;
+  };
+
+  const handleDisconnect = async (platform: string) => {
+    const account = getAccountInfo(platform);
+    if (!account || !profileId) return;
+
+    if (!confirm(`Are you sure you want to disconnect ${platform}?`)) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('getlate-connect', {
+        body: {
+          action: 'disconnect-account',
+          accountId: account._id,
+          profileId
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success(`${platform} disconnected successfully`);
+      await fetchConnectedAccounts(profileId);
+    } catch (error) {
+      console.error('Error disconnecting account:', error);
+      toast.error(`Failed to disconnect ${platform}`);
+    }
   };
 
   // Show page immediately, display loading state only when fetching accounts
@@ -173,7 +199,7 @@ const Settings = () => {
       icon: Instagram,
       color: "text-pink-500",
       connected: isConnected('instagram'),
-      accountInfo: getAccountInfo('instagram'),
+      account: getAccountInfo('instagram'),
     },
     {
       name: "TikTok",
@@ -184,21 +210,21 @@ const Settings = () => {
       ),
       color: "text-foreground",
       connected: isConnected('tiktok'),
-      accountInfo: getAccountInfo('tiktok'),
+      account: getAccountInfo('tiktok'),
     },
     {
       name: "YouTube",
       icon: Youtube,
       color: "text-red-500",
       connected: isConnected('youtube'),
-      accountInfo: getAccountInfo('youtube'),
+      account: getAccountInfo('youtube'),
     },
     {
       name: "Facebook",
       icon: Facebook,
       color: "text-blue-600",
       connected: isConnected('facebook'),
-      accountInfo: getAccountInfo('facebook'),
+      account: getAccountInfo('facebook'),
     },
   ];
 
@@ -235,42 +261,54 @@ const Settings = () => {
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors animate-fade-in"
                   style={{ animationDelay: `${0.2 + index * 0.05}s` }}
                 >
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-6 h-6 ${platform.color}`} />
-                  <div>
-                    <p className="font-medium">{platform.name}</p>
-                    {platform.accountInfo && (
-                      <p className="text-sm text-muted-foreground">{platform.accountInfo}</p>
+                  <div className="flex items-center gap-4">
+                    <Icon className={`w-6 h-6 ${platform.color} flex-shrink-0`} />
+                    <div className="flex items-center gap-3">
+                      {platform.account?.profilePicture && (
+                        <img 
+                          src={platform.account.profilePicture} 
+                          alt={platform.account.displayName}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-border"
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{platform.name}</p>
+                        {platform.account && (
+                          <div className="text-sm text-muted-foreground">
+                            <p className="font-medium">{platform.account.displayName}</p>
+                            <p className="text-xs">@{platform.account.username}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {platform.connected ? (
+                      <>
+                        <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                          Connected
+                        </Badge>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDisconnect(platform.name)}
+                          disabled={loading}
+                        >
+                          Disconnect
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleConnect(platform.name)}
+                        disabled={loading || !profileId}
+                      >
+                        {loading ? "Loading..." : "Connect"}
+                      </Button>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {platform.connected ? (
-                    <>
-                      <Badge variant="secondary" className="bg-green-500/10 text-green-500">
-                        Connected
-                      </Badge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleConnect(platform.name)}
-                        disabled={loading}
-                      >
-                        Reconnect
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleConnect(platform.name)}
-                      disabled={loading || !profileId}
-                    >
-                      {loading ? "Loading..." : "Connect"}
-                    </Button>
-                  )}
-                </div>
-              </div>
               );
             })
           )}

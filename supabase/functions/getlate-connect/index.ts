@@ -178,6 +178,32 @@ Deno.serve(async (req) => {
       }
 
       /**
+       * 5️⃣ Disconnect an account
+       */
+      case 'disconnect-account': {
+        const { accountId } = body;
+        
+        if (!accountId) {
+          throw new Error('"accountId" is required to disconnect an account');
+        }
+
+        const res = await fetch(`${GETLATE_API_URL}/accounts/${encodeURIComponent(accountId)}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to disconnect account: ${res.status} ${res.statusText} - ${errText}`);
+        }
+
+        return jsonResponse({ success: true, message: 'Account disconnected successfully' });
+      }
+
+      /**
        * 🚫 Default: Unknown action
        */
       default:
