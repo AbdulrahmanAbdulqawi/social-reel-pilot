@@ -113,18 +113,24 @@ Deno.serve(async (req) => {
           ? `${connectBase}&redirect_url=${encodeURIComponent(settingsUrl)}`
           : connectBase;
 
+        console.log('Calling GetLate connect URL:', connectUrl);
+
         const res = await fetch(connectUrl, {
           redirect: 'manual',
           headers: { 'Authorization': `Bearer ${getlateApiKey}` },
         });
 
+        console.log('GetLate response status:', res.status, res.statusText);
+
         if (!res.ok && res.status !== 302) {
           const errText = await res.text();
+          console.error('GetLate error response:', errText);
           throw new Error(`Failed to get connect URL: ${res.status} ${res.statusText} - ${errText}`);
         }
 
         // Extract redirect URL
         const authUrl = res.headers.get('location') || res.url;
+        console.log('Got auth URL:', authUrl);
         return jsonResponse({ url: authUrl });
       }
 
