@@ -23,13 +23,24 @@ interface GetLateProfile {
 
 const Settings = () => {
   const [connectedAccounts, setConnectedAccounts] = useState<GetLateAccount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [profileId, setProfileId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(() => {
+    // Load cached profile ID from localStorage
+    return localStorage.getItem('getlate_profile_id');
+  });
   const [initializingProfile, setInitializingProfile] = useState(false);
 
   useEffect(() => {
-    initializeGetLateProfile();
+    // Check OAuth callback first
     handleOAuthCallback();
+    
+    // Initialize profile in background
+    if (!profileId) {
+      initializeGetLateProfile();
+    } else {
+      // If we have a cached profile ID, fetch accounts immediately
+      fetchConnectedAccounts(profileId);
+    }
   }, []);
 
   const initializeGetLateProfile = async () => {
@@ -48,6 +59,7 @@ const Settings = () => {
         // Use the first profile
         const profile = profiles[0];
         setProfileId(profile._id);
+        localStorage.setItem('getlate_profile_id', profile._id);
         await fetchConnectedAccounts(profile._id);
       } else {
         // Create a new profile
@@ -60,6 +72,7 @@ const Settings = () => {
         const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
         if (newProfile) {
           setProfileId(newProfile._id);
+          localStorage.setItem('getlate_profile_id', newProfile._id);
           await fetchConnectedAccounts(newProfile._id);
         }
       }
@@ -91,6 +104,7 @@ const Settings = () => {
 
   const fetchConnectedAccounts = async (getlateProfileId: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.functions.invoke('getlate-connect', {
         body: {
           action: 'list-accounts',
@@ -103,6 +117,8 @@ const Settings = () => {
     } catch (error) {
       console.error('Error fetching connected accounts:', error);
       toast.error('Failed to load connected accounts');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -148,17 +164,8 @@ const Settings = () => {
     return account ? `@${account.username}` : null;
   };
 
-  if (loading || initializingProfile) {
-    return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">Initializing GetLate integration...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Show page immediately, display loading state only when fetching accounts
+  const isInitializing = initializingProfile && !profileId;
 
   const platforms = [
     {
@@ -197,14 +204,16 @@ const Settings = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="mb-6 animate-fade-in">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          Settings
+        </h1>
+        <p className="text-muted-foreground mt-1">
           Manage your connected social media platforms
         </p>
       </div>
 
-      <Card>
+      <Card className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <CardHeader>
           <CardTitle>Connected Platforms</CardTitle>
           <CardDescription>
@@ -212,13 +221,20 @@ const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {platforms.map((platform) => {
-            const Icon = platform.icon;
-            return (
-              <div
-                key={platform.name}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
+          {isInitializing ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-sm text-muted-foreground">Setting up GetLate integration...</p>
+            </div>
+          ) : (
+            platforms.map((platform, index) => {
+              const Icon = platform.icon;
+              return (
+                <div
+                  key={platform.name}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors animate-fade-in"
+                  style={{ animationDelay: `${0.2 + index * 0.05}s` }}
+                >
                 <div className="flex items-center gap-3">
                   <Icon className={`w-6 h-6 ${platform.color}`} />
                   <div>
@@ -238,6 +254,7 @@ const Settings = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleConnect(platform.name)}
+                        disabled={loading}
                       >
                         Reconnect
                       </Button>
@@ -247,14 +264,16 @@ const Settings = () => {
                       variant="default"
                       size="sm"
                       onClick={() => handleConnect(platform.name)}
+                      disabled={loading || !profileId}
                     >
-                      Connect
+                      {loading ? "Loading..." : "Connect"}
                     </Button>
                   )}
                 </div>
               </div>
-            );
-          })}
+              );
+            })
+          )}
         </CardContent>
       </Card>
     </div>
