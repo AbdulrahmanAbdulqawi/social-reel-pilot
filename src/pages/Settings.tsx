@@ -6,294 +6,255 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
-interface PlatformAccount {
-  id: string;
+interface GetLateAccount {
+  _id: string;
   platform: string;
-  connected_at: string;
-  expires_at: string | null;
+  username: string;
+  displayName: string;
+  isActive: boolean;
+  profileId: string;
+}
+
+interface GetLateProfile {
+  _id: string;
+  name: string;
+  description?: string;
 }
 
 const Settings = () => {
-  const [connectedAccounts, setConnectedAccounts] = useState<PlatformAccount[]>([]);
+  const [connectedAccounts, setConnectedAccounts] = useState<GetLateAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [initializingProfile, setInitializingProfile] = useState(false);
 
   useEffect(() => {
-    fetchConnectedAccounts();
+    initializeGetLateProfile();
     handleOAuthCallback();
   }, []);
 
-  const handleOAuthCallback = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-    
-    if (!code) return;
-
-    // Get platform from localStorage (set during auth initiation)
-    const platform = localStorage.getItem('oauth_platform');
-    if (!platform) {
-      console.error('No platform found for OAuth callback');
-      window.history.replaceState({}, '', window.location.pathname);
-      return;
-    }
-
+  const initializeGetLateProfile = async () => {
+    setInitializingProfile(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please log in first');
-        return;
-      }
-
-      const redirectUri = `${window.location.origin}/settings`;
-      
-      const { data, error } = await supabase.functions.invoke('oauth-callback', {
-        body: {
-          platform: platform.toLowerCase(),
-          code,
-          userId: user.id,
-          redirectUri
-        }
+      // First, try to get existing profiles
+      const { data: profilesData, error: profilesError } = await supabase.functions.invoke('getlate-connect', {
+        body: { action: 'list-profiles' }
       });
 
-      if (error) {
-        toast.error(`Failed to connect ${platform}`);
-        console.error('OAuth callback error:', error);
+      if (profilesError) throw profilesError;
+
+      const profiles = profilesData?.profiles as GetLateProfile[] || [];
+      
+      if (profiles.length > 0) {
+        // Use the first profile
+        const profile = profiles[0];
+        setProfileId(profile._id);
+        await fetchConnectedAccounts(profile._id);
       } else {
-        toast.success(`${platform} connected successfully!`);
-        fetchConnectedAccounts();
+        // Create a new profile
+        const { data: newProfileData, error: createError } = await supabase.functions.invoke('getlate-connect', {
+          body: { action: 'create-profile' }
+        });
+
+        if (createError) throw createError;
+
+        const newProfile = newProfileData?.profiles?.[0] as GetLateProfile;
+        if (newProfile) {
+          setProfileId(newProfile._id);
+          await fetchConnectedAccounts(newProfile._id);
+        }
       }
     } catch (error) {
-      console.error('Error processing OAuth callback:', error);
-      toast.error('Failed to connect platform');
+      console.error('Error initializing GetLate profile:', error);
+      toast.error('Failed to initialize GetLate');
     } finally {
-      // Clear OAuth data
-      localStorage.removeItem('oauth_platform');
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  };
-
-  const fetchConnectedAccounts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('platform_accounts')
-        .select('*');
-
-      if (error) throw error;
-      setConnectedAccounts(data || []);
-    } catch (error) {
-      console.error('Error fetching connected accounts:', error);
-    } finally {
+      setInitializingProfile(false);
       setLoading(false);
     }
   };
 
-  const handleConnect = async (platform: string) => {
+  const handleOAuthCallback = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const connected = urlParams.get('connected');
+    const username = urlParams.get('username');
+    
+    if (connected) {
+      toast.success(`${connected} connected successfully as @${username}!`);
+      window.history.replaceState({}, '', window.location.pathname);
+      // Refresh accounts after a short delay to let GetLate process
+      setTimeout(() => {
+        if (profileId) {
+          fetchConnectedAccounts(profileId);
+        }
+      }, 1000);
+    }
+  };
+
+  const fetchConnectedAccounts = async (getlateProfileId: string) => {
     try {
-      const redirectUri = `${window.location.origin}/settings`;
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('Please log in first');
+      const { data, error } = await supabase.functions.invoke('getlate-connect', {
+        body: {
+          action: 'list-accounts',
+          profileId: getlateProfileId
+        }
+      });
+
+      if (error) throw error;
+      setConnectedAccounts(data?.accounts || []);
+    } catch (error) {
+      console.error('Error fetching connected accounts:', error);
+      toast.error('Failed to load connected accounts');
+    }
+  };
+
+  const handleConnect = async (platform: string) => {
+    if (!profileId) {
+      toast.error('Profile not initialized');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('getlate-connect', {
+        body: {
+          action: 'get-connect-url',
+          platform: platform.toLowerCase(),
+          profileId
+        }
+      });
+
+      if (error || !data?.url) {
+        console.error('GetLate connect URL error:', error);
+        toast.error(`Failed to start ${platform} connection`);
         return;
       }
 
-      // Store platform for OAuth callback
-      localStorage.setItem('oauth_platform', platform);
-
-      // Initiate OAuth flow
-      let authUrl = '';
-      
-      switch (platform.toLowerCase()) {
-        case 'tiktok': {
-          const { data, error } = await supabase.functions.invoke('tiktok-auth-url', {
-            body: { redirectUri }
-          });
-          if (error || !data?.url) {
-            console.error('TikTok auth URL error:', error);
-            toast.error('Failed to start TikTok connect');
-            return;
-          }
-          authUrl = data.url as string;
-          break;
-        }
-          
-        case 'instagram': {
-          const { data, error } = await supabase.functions.invoke('instagram-auth-url', {
-            body: { redirectUri }
-          });
-          if (error || !data?.url) {
-            console.error('Instagram auth URL error:', error);
-            toast.error('Failed to start Instagram connect');
-            return;
-          }
-          authUrl = data.url as string;
-          break;
-        }
-
-        case 'facebook': {
-          const { data, error } = await supabase.functions.invoke('facebook-auth-url', {
-            body: { redirectUri }
-          });
-          if (error || !data?.url) {
-            console.error('Facebook auth URL error:', error);
-            toast.error('Failed to start Facebook connect');
-            return;
-          }
-          authUrl = data.url as string;
-          break;
-        }
-          
-        case 'youtube':
-          toast.info('YouTube OAuth - Coming soon');
-          return;
-          
-        default:
-          toast.error('Unknown platform');
-          return;
-      }
-      
-      // Redirect to OAuth
-      window.location.href = authUrl;
+      // Redirect to GetLate OAuth
+      window.location.href = data.url;
     } catch (error) {
-      console.error('Error connecting platform:', error);
+      console.error('Error initiating OAuth:', error);
       toast.error('Failed to connect platform');
     }
   };
 
-  const isTokenExpired = (account: PlatformAccount | undefined) => {
-    if (!account || !account.expires_at) return false;
-    return new Date(account.expires_at) < new Date();
-  };
-
-  const getPlatformAccount = (platformName: string) => {
-    return connectedAccounts.find(
-      acc => acc.platform.toLowerCase() === platformName.toLowerCase()
+  const isConnected = (platform: string) => {
+    return connectedAccounts.some(
+      acc => acc.platform.toLowerCase() === platform.toLowerCase() && acc.isActive
     );
   };
 
-  const isConnected = (platformName: string) => {
-    const account = getPlatformAccount(platformName);
-    if (!account) return false;
-    // Consider disconnected if token is expired
-    return !isTokenExpired(account);
+  const getAccountInfo = (platform: string) => {
+    const account = connectedAccounts.find(
+      acc => acc.platform.toLowerCase() === platform.toLowerCase() && acc.isActive
+    );
+    return account ? `@${account.username}` : null;
   };
+
+  if (loading || initializingProfile) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-center text-muted-foreground">Initializing GetLate integration...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const platforms = [
     {
       name: "Instagram",
       icon: Instagram,
-      color: "bg-pink-500",
-      connected: isConnected("instagram"),
-    },
-    {
-      name: "Facebook",
-      icon: Facebook,
-      color: "bg-blue-600",
-      connected: isConnected("facebook"),
+      color: "text-pink-500",
+      connected: isConnected('instagram'),
+      accountInfo: getAccountInfo('instagram'),
     },
     {
       name: "TikTok",
       icon: () => (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
         </svg>
       ),
-      color: "bg-black",
-      connected: isConnected("tiktok"),
+      color: "text-foreground",
+      connected: isConnected('tiktok'),
+      accountInfo: getAccountInfo('tiktok'),
     },
     {
       name: "YouTube",
       icon: Youtube,
-      color: "bg-red-500",
-      connected: isConnected("youtube"),
+      color: "text-red-500",
+      connected: isConnected('youtube'),
+      accountInfo: getAccountInfo('youtube'),
+    },
+    {
+      name: "Facebook",
+      icon: Facebook,
+      color: "text-blue-600",
+      connected: isConnected('facebook'),
+      accountInfo: getAccountInfo('facebook'),
     },
   ];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div>
+    <div className="p-6">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and connected platforms</p>
+        <p className="text-muted-foreground mt-2">
+          Manage your connected social media platforms
+        </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Connected Platforms</CardTitle>
           <CardDescription>
-            Connect your social media accounts to enable auto-posting
+            Connect your social media accounts to start posting (powered by GetLate)
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {platforms.map((platform) => (
-            <div
-              key={platform.name}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`p-3 ${platform.color} rounded-lg text-white`}>
-                  <platform.icon className="w-6 h-6" />
+          {platforms.map((platform) => {
+            const Icon = platform.icon;
+            return (
+              <div
+                key={platform.name}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-6 h-6 ${platform.color}`} />
+                  <div>
+                    <p className="font-medium">{platform.name}</p>
+                    {platform.accountInfo && (
+                      <p className="text-sm text-muted-foreground">{platform.accountInfo}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{platform.name}</p>
-                  {(() => {
-                    const account = getPlatformAccount(platform.name);
-                    const expired = account && isTokenExpired(account);
-                    return (
-                      <p className="text-sm text-muted-foreground">
-                        {platform.connected 
-                          ? "Connected" 
-                          : expired 
-                            ? "Token expired - reconnect required" 
-                            : "Not connected"}
-                      </p>
-                    );
-                  })()}
+                <div className="flex items-center gap-3">
+                  {platform.connected ? (
+                    <>
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                        Connected
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleConnect(platform.name)}
+                      >
+                        Reconnect
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleConnect(platform.name)}
+                    >
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </div>
-              {platform.connected ? (
-                <Badge variant="outline" className="bg-green-500/10 text-green-700">
-                  Connected
-                </Badge>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => handleConnect(platform.name)}
-                >
-                  {getPlatformAccount(platform.name) && isTokenExpired(getPlatformAccount(platform.name)!) 
-                    ? "Reconnect" 
-                    : "Connect"}
-                </Button>
-              )}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Posting Schedule</CardTitle>
-          <CardDescription>
-            Configure your default posting times
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Schedule settings coming soon! This will allow you to set optimal posting times for each platform.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>
-            Manage how you receive updates
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Notification preferences coming soon! Get alerts when reels are posted or receive engagement updates.
-          </p>
+            );
+          })}
         </CardContent>
       </Card>
     </div>

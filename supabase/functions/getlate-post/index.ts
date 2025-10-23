@@ -1,0 +1,128 @@
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const GETLATE_API_URL = 'https://getlate.dev/api/v1';
+
+interface PostRequest {
+  reelId: string;
+  videoUrl: string;
+  title: string;
+  caption?: string;
+  hashtags?: string[];
+  platform: string;
+  accountId: string;
+  scheduledFor?: string;
+  timezone?: string;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const getlateApiKey = Deno.env.get('GETLATE_API_KEY');
+    if (!getlateApiKey) {
+      throw new Error('GetLate API key not configured');
+    }
+
+    const postData: PostRequest = await req.json();
+    console.log('GetLate Post Request:', postData);
+
+    // Build the content with caption and hashtags
+    let content = postData.title;
+    if (postData.caption) {
+      content += `\n\n${postData.caption}`;
+    }
+    if (postData.hashtags && postData.hashtags.length > 0) {
+      content += `\n\n${postData.hashtags.map(tag => `#${tag}`).join(' ')}`;
+    }
+
+    // Build platform-specific data
+    const platformSpecificData: any = {};
+    
+    switch (postData.platform.toLowerCase()) {
+      case 'instagram':
+        platformSpecificData.contentType = 'reel';
+        break;
+      case 'tiktok':
+        platformSpecificData.tiktokSettings = {
+          privacy_level: 'PUBLIC_TO_EVERYONE',
+          allow_comment: true,
+          allow_duet: true,
+          allow_stitch: true,
+        };
+        break;
+      case 'youtube':
+        platformSpecificData.contentType = 'short';
+        platformSpecificData.visibility = 'public';
+        break;
+    }
+
+    // Build the post request body
+    const requestBody: any = {
+      content,
+      platforms: [
+        {
+          platform: postData.platform.toLowerCase(),
+          accountId: postData.accountId,
+          platformSpecificData,
+        }
+      ],
+      mediaItems: [
+        {
+          type: 'video',
+          url: postData.videoUrl,
+        }
+      ],
+    };
+
+    // Add scheduling if provided
+    if (postData.scheduledFor) {
+      requestBody.scheduledFor = postData.scheduledFor;
+      requestBody.timezone = postData.timezone || 'UTC';
+    } else {
+      requestBody.publishNow = true;
+    }
+
+    console.log('Sending to GetLate:', JSON.stringify(requestBody, null, 2));
+
+    // Post to GetLate
+    const response = await fetch(`${GETLATE_API_URL}/posts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${getlateApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      console.error('GetLate API Error:', responseData);
+      throw new Error(`GetLate API error: ${responseData.error || response.statusText}`);
+    }
+
+    console.log('GetLate Post Success:', responseData);
+
+    return new Response(JSON.stringify({
+      success: true,
+      postId: responseData.post?._id,
+      platformPostUrl: responseData.post?.platforms?.[0]?.platformPostUrl,
+      data: responseData,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('GetLate Post Error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
