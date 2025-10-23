@@ -1,4 +1,4 @@
-import { Home, Upload, BarChart3, Settings, Video, LogOut } from "lucide-react";
+import { Home, Upload, BarChart3, Settings, Video, LogOut, Users } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Upload", url: "/upload", icon: Upload },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Users", url: "/users", icon: Users },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
