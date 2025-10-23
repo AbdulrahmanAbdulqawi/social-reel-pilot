@@ -1,3 +1,5 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -108,6 +110,25 @@ Deno.serve(async (req) => {
     }
 
     console.log('GetLate Post Success:', responseData);
+
+    // Update the reel with the GetLate post ID
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { error: updateError } = await supabaseClient
+      .from('reels')
+      .update({
+        getlate_post_id: responseData.post?._id,
+        posting_method: 'getlate',
+        status: postData.scheduledFor ? 'scheduled' : 'posted',
+      })
+      .eq('id', postData.reelId);
+
+    if (updateError) {
+      console.error('Failed to update reel with GetLate post ID:', updateError);
+    }
 
     return new Response(JSON.stringify({
       success: true,

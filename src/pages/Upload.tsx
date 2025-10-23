@@ -203,16 +203,10 @@ const Upload = () => {
         throw postError;
       }
 
-      // Update reel status to posted
-      await supabase
-        .from("reels")
-        .update({ 
-          status: scheduledFor ? "scheduled" : "posted",
-          posted_at: scheduledFor ? null : new Date().toISOString()
-        })
-        .eq("id", reelData.id);
+      // The getlate-post function already updated the reel with GetLate post ID
+      console.log('GetLate post result:', postResult);
 
-      toast.success(`Reel ${scheduledFor ? 'scheduled' : 'posted'} successfully!`);
+      toast.success(`Reel ${scheduledFor ? 'scheduled' : 'posted'} successfully via GetLate!`);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating reel:", error);

@@ -116,10 +116,12 @@ export type Database = {
         Row: {
           caption: string | null
           created_at: string
+          getlate_post_id: string | null
           hashtags: string[] | null
           id: string
           platform: Database["public"]["Enums"]["platform_type"]
           posted_at: string | null
+          posting_method: string | null
           scheduled_at: string | null
           status: Database["public"]["Enums"]["reel_status"]
           thumbnail_url: string | null
@@ -131,10 +133,12 @@ export type Database = {
         Insert: {
           caption?: string | null
           created_at?: string
+          getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
           platform: Database["public"]["Enums"]["platform_type"]
           posted_at?: string | null
+          posting_method?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["reel_status"]
           thumbnail_url?: string | null
@@ -146,10 +150,12 @@ export type Database = {
         Update: {
           caption?: string | null
           created_at?: string
+          getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
           platform?: Database["public"]["Enums"]["platform_type"]
           posted_at?: string | null
+          posting_method?: string | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["reel_status"]
           thumbnail_url?: string | null

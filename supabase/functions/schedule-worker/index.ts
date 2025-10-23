@@ -38,17 +38,19 @@ Deno.serve(async (req) => {
     console.log('Schedule worker running at:', new Date().toISOString());
 
     // Find all scheduled reels that are due to be posted
+    // ONLY process reels that are NOT using GetLate (for backwards compatibility)
     const { data: dueReels, error: fetchError } = await supabase
       .from('reels')
       .select('*')
       .eq('status', 'scheduled')
-      .lte('scheduled_at', new Date().toISOString());
+      .lte('scheduled_at', new Date().toISOString())
+      .or('posting_method.is.null,posting_method.eq.direct');
 
     if (fetchError) {
       throw fetchError;
     }
 
-    console.log(`Found ${dueReels?.length || 0} reels to post`);
+    console.log(`Found ${dueReels?.length || 0} reels to post (excluding GetLate-managed reels)`);
 
     const results = [];
 
