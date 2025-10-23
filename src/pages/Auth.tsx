@@ -85,22 +85,50 @@ const Auth = () => {
         throw new Error('Failed to create user account');
       }
 
-      // Step 2: Create GetLate profile for the user
+      // Step 2: Wait for profile to be created by trigger (with retry logic)
+      let profileExists = false;
+      let retries = 0;
+      const maxRetries = 10; // 5 seconds total (10 * 500ms)
+      
+      while (!profileExists && retries < maxRetries) {
+        const { data: profileCheck } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', authData.user.id)
+          .maybeSingle();
+        
+        if (profileCheck) {
+          profileExists = true;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          retries++;
+        }
+      }
+
+      if (!profileExists) {
+        throw new Error('Profile creation timed out. Please try logging in.');
+      }
+
+      // Step 3: Create GetLate profile for the user
       const newProfile = await createGetLateProfile();
 
       if (!newProfile) {
         console.error('Failed to create GetLate profile');
         toast.warning('Account created, but profile setup incomplete. Please visit Settings to complete setup.');
-      } else {
-        // Step 3: Link GetLate profile to user
-        const linked = await linkGetLateProfileToUser(newProfile._id);
+        return;
+      }
 
-        if (!linked) {
-          console.error('Failed to link GetLate profile');
-          toast.warning('Account created, but profile linking failed. Please visit Settings to complete setup.');
-        } else {
-          toast.success("Account created successfully! You can now connect your social media accounts.");
-        }
+      // Step 4: Link GetLate profile to user
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ getlate_profile_id: newProfile._id })
+        .eq('id', authData.user.id);
+
+      if (updateError) {
+        console.error('Failed to link GetLate profile:', updateError);
+        toast.warning('Account created, but profile linking failed. Please visit Settings to complete setup.');
+      } else {
+        toast.success("Account created successfully! You can now connect your social media accounts.");
       }
     } catch (error: any) {
       console.error('Signup error:', error);
