@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const getlateApiKey = Deno.env.get('GETLATE_API_KEY');
+    const getlateApiKey = Deno.env.get('GETLATE_API_KEY') || Deno.env.get('Late_API_KEY') || Deno.env.get('LATE_API_KEY');
+    console.log('GetLate API key present:', !!getlateApiKey);
     if (!getlateApiKey) {
       throw new Error('GetLate API key not configured');
     }
@@ -70,25 +71,33 @@ Deno.serve(async (req) => {
           throw new Error('Platform and profileId required for connect URL');
         }
 
-        const redirectUrl = Deno.env.get('VITE_SUPABASE_URL')?.replace('.supabase.co', '') || '';
-        const settingsUrl = `${redirectUrl}/settings`;
+        // Try to build a redirect back to app settings (optional)
+        const referer = req.headers.get('origin') || req.headers.get('referer') || '';
+        let settingsUrl = '';
+        if (referer) {
+          try {
+            const u = new URL(referer);
+            settingsUrl = `${u.origin}/settings`;
+          } catch (_) {}
+        }
 
-        const response = await fetch(
-          `${GETLATE_API_URL}/connect/${platform.toLowerCase()}?profileId=${profileId}&redirect_url=${encodeURIComponent(settingsUrl)}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${getlateApiKey}`,
-            },
-          }
-        );
+        const baseUrl = `${GETLATE_API_URL}/connect/${platform.toLowerCase()}?profileId=${profileId}`;
+        const connectUrl = settingsUrl ? `${baseUrl}&redirect_url=${encodeURIComponent(settingsUrl)}` : baseUrl;
+
+        const response = await fetch(connectUrl, {
+          redirect: 'manual',
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+          },
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to get connect URL: ${errorText}`);
         }
 
-        // GetLate returns a redirect response
-        const authUrl = response.url;
+        // GetLate returns a redirect response with Location header
+        const authUrl = response.headers.get('location') || response.url;
         
         return new Response(JSON.stringify({ url: authUrl }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -23,7 +23,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const getlateApiKey = Deno.env.get('GETLATE_API_KEY');
+    const getlateApiKey = Deno.env.get('GETLATE_API_KEY') || Deno.env.get('Late_API_KEY') || Deno.env.get('LATE_API_KEY');
+    console.log('GetLate API key present (post):', !!getlateApiKey);
     if (!getlateApiKey) {
       throw new Error('GetLate API key not configured');
     }
