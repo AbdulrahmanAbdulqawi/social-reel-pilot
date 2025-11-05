@@ -37,6 +37,8 @@ const Auth = () => {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
 
   useEffect(() => {
     // Check if user is already logged in
@@ -130,9 +132,10 @@ const Auth = () => {
         throw new Error('No GetLate profiles available. Please contact support.');
       }
 
-      toast.success("Account created successfully! You can now connect your social media accounts.");
+      toast.success("Account created! Please check your email to verify your account.");
+      setVerificationEmailSent(true);
+      setVerificationEmail(email);
       setIsRegistering(false);
-      // Navigation will happen automatically via the useEffect
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
@@ -163,6 +166,68 @@ const Auth = () => {
       toast.error(error.message);
     }
   };
+
+  const handleResendVerification = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: verificationEmail,
+      });
+
+      if (error) throw error;
+      toast.success("Verification email resent! Please check your inbox.");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to resend verification email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (verificationEmailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+        <Card className="w-full max-w-md shadow-glow">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-primary rounded-2xl">
+                <Video className="w-8 h-8 text-primary-foreground" />
+              </div>
+            </div>
+            <CardTitle className="text-3xl font-bold">Verify Your Email</CardTitle>
+            <CardDescription>
+              We've sent a verification link to <strong>{verificationEmail}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Please check your email and click the verification link to activate your account.
+            </p>
+            <Button 
+              onClick={handleResendVerification} 
+              variant="outline" 
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Resending..." : "Resend Verification Email"}
+            </Button>
+            <Button 
+              onClick={() => {
+                setVerificationEmailSent(false);
+                setEmail("");
+                setPassword("");
+                setUsername("");
+              }} 
+              variant="ghost" 
+              className="w-full"
+            >
+              Back to Sign Up
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
