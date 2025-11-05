@@ -136,8 +136,16 @@ async function findFreeGetLateProfile(): Promise<string | null> {
 }
 
 /**
+ * Checks if a free GetLate profile is available (not used for signup validation)
+ */
+export async function checkFreeProfileAvailability(): Promise<boolean> {
+  const freeProfileId = await findFreeGetLateProfile();
+  return freeProfileId !== null;
+}
+
+/**
  * Ensures the current user has a GetLate profile
- * Strategy: check if user has profile -> find free profile -> create new profile if needed
+ * Strategy: check if user has profile -> find free profile -> FAIL if none available
  */
 export async function ensureUserHasGetLateProfile(): Promise<string | null> {
   // 1) Return if already linked
@@ -151,13 +159,6 @@ export async function ensureUserHasGetLateProfile(): Promise<string | null> {
     return linked ? freeProfileId : null;
   }
 
-  // 3) No free profiles available, create a new one
-  await createGetLateProfile();
-
-  // 4) Fetch the latest profile and link it
-  const latest = await getLatestGetLateProfile();
-  if (!latest?._id) return null;
-
-  const linked = await linkGetLateProfileToUser(latest._id);
-  return linked ? latest._id : null;
+  // 3) No free profiles available - DO NOT create new one
+  return null;
 }

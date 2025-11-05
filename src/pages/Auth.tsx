@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ensureUserHasGetLateProfile } from "@/lib/getlateProfile";
+import { ensureUserHasGetLateProfile, checkFreeProfileAvailability } from "@/lib/getlateProfile";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
@@ -64,10 +64,19 @@ const Auth = () => {
     }
 
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
     
     try {
-      // Step 1: Sign up the user
+      // Step 1: Check if free profile is available BEFORE creating account
+      const isAvailable = await checkFreeProfileAvailability();
+      if (!isAvailable) {
+        toast.error('Registration is currently unavailable. No free profiles available.');
+        setLoading(false);
+        return;
+      }
+
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      
+      // Step 2: Sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -113,11 +122,12 @@ const Auth = () => {
       const linkedId = await ensureUserHasGetLateProfile();
 
       if (!linkedId) {
-        console.error('Failed to link GetLate profile');
-        toast.warning('Account created, but profile linking failed. Please visit Settings to complete setup.');
-      } else {
-        toast.success("Account created successfully! You can now connect your social media accounts.");
+        // Delete the created user account since we can't link a profile
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        throw new Error('No GetLate profiles available. Registration failed.');
       }
+
+      toast.success("Account created successfully! You can now connect your social media accounts.");
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
