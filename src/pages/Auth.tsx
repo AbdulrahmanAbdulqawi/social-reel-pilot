@@ -36,23 +36,24 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && !isRegistering) {
         navigate("/dashboard");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+      if (session && !isRegistering) {
         navigate("/dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, isRegistering]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +65,7 @@ const Auth = () => {
     }
 
     setLoading(true);
+    setIsRegistering(true);
     
     try {
       // Step 1: Check if free profile is available BEFORE creating account
@@ -128,9 +130,12 @@ const Auth = () => {
       }
 
       toast.success("Account created successfully! You can now connect your social media accounts.");
+      setIsRegistering(false);
+      // Navigation will happen automatically via the useEffect
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
+      setIsRegistering(false);
     } finally {
       setLoading(false);
     }
