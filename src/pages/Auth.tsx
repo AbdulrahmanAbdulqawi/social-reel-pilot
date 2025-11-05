@@ -73,6 +73,7 @@ const Auth = () => {
       if (!isAvailable) {
         toast.error('Registration is currently unavailable. No free profiles available.');
         setLoading(false);
+        setIsRegistering(false);
         return;
       }
 
@@ -124,9 +125,9 @@ const Auth = () => {
       const linkedId = await ensureUserHasGetLateProfile();
 
       if (!linkedId) {
-        // Delete the created user account since we can't link a profile
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw new Error('No GetLate profiles available. Registration failed.');
+        // Sign out the user since we couldn't link a profile
+        await supabase.auth.signOut();
+        throw new Error('No GetLate profiles available. Please contact support.');
       }
 
       toast.success("Account created successfully! You can now connect your social media accounts.");
