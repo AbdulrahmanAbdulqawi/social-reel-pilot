@@ -108,18 +108,53 @@ export async function linkGetLateProfileToUser(getlateProfileId: string): Promis
 }
 
 /**
- * Ensures the current user has a GetLate profile, creating one if needed
- * Strategy: create -> fetch latest -> link
+ * Finds a free GetLate profile that isn't linked to any user
+ */
+async function findFreeGetLateProfile(): Promise<string | null> {
+  try {
+    // Get all GetLate profiles
+    const allProfiles = await listGetLateProfiles();
+    if (!allProfiles.length) return null;
+
+    // Get all linked profile IDs from our database
+    const { data: linkedProfiles, error } = await supabase
+      .from('profiles')
+      .select('getlate_profile_id')
+      .not('getlate_profile_id', 'is', null);
+
+    if (error) throw error;
+
+    const linkedIds = new Set(linkedProfiles?.map(p => p.getlate_profile_id) || []);
+
+    // Find the first profile that isn't linked
+    const freeProfile = allProfiles.find(profile => !linkedIds.has(profile._id));
+    return freeProfile?._id || null;
+  } catch (error) {
+    console.error('Error finding free GetLate profile:', error);
+    return null;
+  }
+}
+
+/**
+ * Ensures the current user has a GetLate profile
+ * Strategy: check if user has profile -> find free profile -> create new profile if needed
  */
 export async function ensureUserHasGetLateProfile(): Promise<string | null> {
   // 1) Return if already linked
   let profileId = await getUserGetLateProfileId();
   if (profileId) return profileId;
 
-  // 2) Try to create a new profile
+  // 2) Try to find a free profile first
+  const freeProfileId = await findFreeGetLateProfile();
+  if (freeProfileId) {
+    const linked = await linkGetLateProfileToUser(freeProfileId);
+    return linked ? freeProfileId : null;
+  }
+
+  // 3) No free profiles available, create a new one
   await createGetLateProfile();
 
-  // 3) Fetch the latest profile and link it
+  // 4) Fetch the latest profile and link it
   const latest = await getLatestGetLateProfile();
   if (!latest?._id) return null;
 
