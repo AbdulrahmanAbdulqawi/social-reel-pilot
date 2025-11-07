@@ -19,12 +19,12 @@ import { toast } from "sonner";
 import { checkIsAdmin } from "@/lib/adminHelper";
 
 const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Upload", url: "/upload", icon: Upload },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Subscription", url: "/subscription", icon: CreditCard },
-  { title: "Account", url: "/settings", icon: Settings },
-  { title: "Contact", url: "/contact", icon: Mail },
+  { title: "Dashboard", url: "/dashboard", icon: Home, hideForAdmin: true },
+  { title: "Upload", url: "/upload", icon: Upload, hideForAdmin: true },
+  { title: "Analytics", url: "/analytics", icon: BarChart3, hideForAdmin: false },
+  { title: "Subscription", url: "/subscription", icon: CreditCard, hideForAdmin: true },
+  { title: "Account", url: "/settings", icon: Settings, hideForAdmin: false },
+  { title: "Contact", url: "/contact", icon: Mail, hideForAdmin: true },
 ];
 
 export function AppSidebar() {
@@ -64,23 +64,25 @@ export function AppSidebar() {
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "hover:bg-sidebar-accent/50"
-                      }
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems
+                .filter(item => !(isAdmin && item.hideForAdmin))
+                .map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={({ isActive }) =>
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                            : "hover:bg-sidebar-accent/50"
+                        }
+                      >
+                        <item.icon className="w-4 h-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               
               {isAdmin && (
                 <SidebarMenuItem>

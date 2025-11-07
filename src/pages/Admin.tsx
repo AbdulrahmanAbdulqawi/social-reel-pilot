@@ -252,12 +252,12 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold">Admin Panel</h1>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
+          <Button variant="outline" onClick={handleLogout} className="w-full sm:w-auto">
             <LogOut className="h-4 w-4 mr-2" />
             Logout
           </Button>
@@ -327,12 +327,12 @@ export default function Admin() {
           <TabsContent value="users" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>User Management</CardTitle>
                     <CardDescription>Manage user accounts and roles</CardDescription>
                   </div>
-                  <Button onClick={loadUsers}>
+                  <Button onClick={loadUsers} className="w-full sm:w-auto">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
@@ -351,51 +351,53 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Profile ID</TableHead>
-                      <TableHead>Roles</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.email}</TableCell>
-                        <TableCell>{user.username || '-'}</TableCell>
-                        <TableCell className="font-mono text-xs">
-                          {user.getlate_profile_id ? (
-                            <code className="bg-muted px-2 py-1 rounded">
-                              {user.getlate_profile_id.slice(0, 8)}...
-                            </code>
-                          ) : '-'}
-                        </TableCell>
-                        <TableCell>
-                          {user.user_roles?.map((ur: any) => (
-                            <Badge key={ur.role} variant="secondary" className="mr-1">
-                              {ur.role}
-                            </Badge>
-                          ))}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setRoleDialog(true);
-                            }}
-                          >
-                            <UserPlus className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[200px]">Email</TableHead>
+                        <TableHead className="min-w-[120px]">Username</TableHead>
+                        <TableHead className="min-w-[150px]">Profile ID</TableHead>
+                        <TableHead className="min-w-[100px]">Roles</TableHead>
+                        <TableHead className="min-w-[100px]">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.email}</TableCell>
+                          <TableCell>{user.username || '-'}</TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {user.getlate_profile_id ? (
+                              <code className="bg-muted px-2 py-1 rounded">
+                                {user.getlate_profile_id.slice(0, 8)}...
+                              </code>
+                            ) : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {user.user_roles?.map((ur: any) => (
+                              <Badge key={ur.role} variant="secondary" className="mr-1">
+                                {ur.role}
+                              </Badge>
+                            ))}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setRoleDialog(true);
+                              }}
+                            >
+                              <UserPlus className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -404,17 +406,17 @@ export default function Admin() {
           <TabsContent value="profiles" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Profile Management</CardTitle>
                     <CardDescription>Manage GetLate profiles and connections</CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleCreateProfile} variant="default">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button onClick={handleCreateProfile} variant="default" className="w-full sm:w-auto">
                       <FolderPlus className="h-4 w-4 mr-2" />
                       Create Profile
                     </Button>
-                    <Button onClick={loadProfiles} variant="outline">
+                    <Button onClick={loadProfiles} variant="outline" className="w-full sm:w-auto">
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Refresh
                     </Button>
@@ -422,50 +424,52 @@ export default function Admin() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Profile ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Linked User</TableHead>
-                      <TableHead>Accounts</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {profiles.map((profile) => (
-                      <TableRow key={profile._id}>
-                        <TableCell className="font-mono text-xs">
-                          <code className="bg-muted px-2 py-1 rounded">
-                            {profile._id.slice(0, 8)}...
-                          </code>
-                        </TableCell>
-                        <TableCell>{profile.name}</TableCell>
-                        <TableCell>
-                          <Badge variant={profile.status === 'in_use' ? 'default' : 'secondary'}>
-                            {profile.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {profile.linkedUser ? profile.linkedUser.email : '-'}
-                        </TableCell>
-                        <TableCell>{profile.accounts?.length || 0}</TableCell>
-                        <TableCell>
-                          {profile.linkedUser && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReleaseProfile(profile._id, profile.linkedUser.id)}
-                            >
-                              Release
-                            </Button>
-                          )}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[150px]">Profile ID</TableHead>
+                        <TableHead className="min-w-[120px]">Name</TableHead>
+                        <TableHead className="min-w-[100px]">Status</TableHead>
+                        <TableHead className="min-w-[200px]">Linked User</TableHead>
+                        <TableHead className="min-w-[100px]">Accounts</TableHead>
+                        <TableHead className="min-w-[100px]">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {profiles.map((profile) => (
+                        <TableRow key={profile._id}>
+                          <TableCell className="font-mono text-xs">
+                            <code className="bg-muted px-2 py-1 rounded">
+                              {profile._id.slice(0, 8)}...
+                            </code>
+                          </TableCell>
+                          <TableCell>{profile.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={profile.status === 'in_use' ? 'default' : 'secondary'}>
+                              {profile.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {profile.linkedUser ? profile.linkedUser.email : '-'}
+                          </TableCell>
+                          <TableCell>{profile.accounts?.length || 0}</TableCell>
+                          <TableCell>
+                            {profile.linkedUser && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleReleaseProfile(profile._id, profile.linkedUser.id)}
+                              >
+                                Release
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -474,58 +478,60 @@ export default function Admin() {
           <TabsContent value="subscriptions" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Subscription Management</CardTitle>
                     <CardDescription>Manage user subscriptions and limits</CardDescription>
                   </div>
-                  <Button onClick={loadSubscriptions}>
+                  <Button onClick={loadSubscriptions} className="w-full sm:w-auto">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Plan</TableHead>
-                      <TableHead>Posts Limit</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {subscriptions.map((sub) => (
-                      <TableRow key={sub.id}>
-                        <TableCell>{sub.profiles?.email || 'N/A'}</TableCell>
-                        <TableCell>
-                          <Badge>{sub.plan_type}</Badge>
-                        </TableCell>
-                        <TableCell>{sub.posts_limit}</TableCell>
-                        <TableCell>
-                          <Badge variant={sub.status === 'active' ? 'default' : 'secondary'}>
-                            {sub.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            onValueChange={(value) => handleUpdateSubscription(sub.user_id, value)}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Change plan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="free_trial">Free Trial</SelectItem>
-                              <SelectItem value="premium">Premium</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[200px]">User</TableHead>
+                        <TableHead className="min-w-[120px]">Plan</TableHead>
+                        <TableHead className="min-w-[120px]">Posts Limit</TableHead>
+                        <TableHead className="min-w-[100px]">Status</TableHead>
+                        <TableHead className="min-w-[150px]">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {subscriptions.map((sub) => (
+                        <TableRow key={sub.id}>
+                          <TableCell>{sub.profiles?.email || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge>{sub.plan_type}</Badge>
+                          </TableCell>
+                          <TableCell>{sub.posts_limit}</TableCell>
+                          <TableCell>
+                            <Badge variant={sub.status === 'active' ? 'default' : 'secondary'}>
+                              {sub.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              onValueChange={(value) => handleUpdateSubscription(sub.user_id, value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue placeholder="Change plan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="free_trial">Free Trial</SelectItem>
+                                <SelectItem value="premium">Premium</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -534,48 +540,50 @@ export default function Admin() {
           <TabsContent value="audit" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Audit Logs</CardTitle>
                     <CardDescription>View all admin actions</CardDescription>
                   </div>
-                  <Button onClick={loadAuditLogs}>
+                  <Button onClick={loadAuditLogs} className="w-full sm:w-auto">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Admin</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Entity</TableHead>
-                      <TableHead>Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell className="text-xs">
-                          {new Date(log.created_at).toLocaleString()}
-                        </TableCell>
-                        <TableCell>{log.profiles?.email || 'System'}</TableCell>
-                        <TableCell>
-                          <code className="bg-muted px-2 py-1 rounded text-xs">
-                            {log.action}
-                          </code>
-                        </TableCell>
-                        <TableCell>{log.entity_type}</TableCell>
-                        <TableCell className="text-xs">
-                          {log.details ? JSON.stringify(log.details).slice(0, 50) : '-'}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[180px]">Timestamp</TableHead>
+                        <TableHead className="min-w-[200px]">Admin</TableHead>
+                        <TableHead className="min-w-[150px]">Action</TableHead>
+                        <TableHead className="min-w-[120px]">Entity</TableHead>
+                        <TableHead className="min-w-[200px]">Details</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {auditLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-xs">
+                            {new Date(log.created_at).toLocaleString()}
+                          </TableCell>
+                          <TableCell>{log.profiles?.email || 'System'}</TableCell>
+                          <TableCell>
+                            <code className="bg-muted px-2 py-1 rounded text-xs">
+                              {log.action}
+                            </code>
+                          </TableCell>
+                          <TableCell>{log.entity_type}</TableCell>
+                          <TableCell className="text-xs">
+                            {log.details ? JSON.stringify(log.details).slice(0, 50) : '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
