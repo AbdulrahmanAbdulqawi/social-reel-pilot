@@ -197,11 +197,20 @@ export default function Admin() {
       });
       await loadProfiles();
       await loadStats();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Profile creation error:', error);
+      
+      // Extract error message from response
+      let errorMessage = "Failed to create profile";
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to create profile"
+        title: "Profile Creation Failed",
+        description: errorMessage,
+        duration: 5000
       });
     }
   };

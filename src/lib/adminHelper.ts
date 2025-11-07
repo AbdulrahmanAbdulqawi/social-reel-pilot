@@ -33,6 +33,11 @@ export async function adminInvoke(action: string, body: any = {}) {
     body: { action, ...body }
   });
 
-  if (error) throw error;
+  if (error) {
+    // Try to extract detailed error message
+    const errorMessage = data?.error || error.message || 'Unknown error occurred';
+    throw new Error(errorMessage);
+  }
+  
   return data;
 }
