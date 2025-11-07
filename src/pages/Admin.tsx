@@ -149,6 +149,7 @@ export default function Admin() {
       });
 
       toast({
+        variant: "success",
         title: "Success",
         description: `Role ${selectedRole} assigned successfully`
       });
@@ -168,6 +169,7 @@ export default function Admin() {
     try {
       await adminInvoke('release-profile', { profileId, userId });
       toast({
+        variant: "success",
         title: "Success",
         description: "Profile released successfully"
       });
@@ -185,6 +187,7 @@ export default function Admin() {
     try {
       await adminInvoke('create-getlate-profile', {});
       toast({
+        variant: "success",
         title: "Success",
         description: "New GetLate profile created"
       });
@@ -212,6 +215,7 @@ export default function Admin() {
     try {
       await adminInvoke('update-subscription', { userId, planType });
       toast({
+        variant: "success",
         title: "Success",
         description: "Subscription updated successfully"
       });
