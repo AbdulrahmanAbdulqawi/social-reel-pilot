@@ -199,7 +199,7 @@ const Auth = () => {
   // Show profile claim error screen
   if (profileClaimError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md shadow-glow">
           <CardHeader className="space-y-4 text-center pb-2">
             <div className="mx-auto bg-destructive/10 w-16 h-16 rounded-full flex items-center justify-center">
@@ -241,7 +241,7 @@ const Auth = () => {
 
   if (verificationEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md shadow-glow">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -285,7 +285,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-glow">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
