@@ -452,60 +452,101 @@ const Settings = () => {
               return (
                 <div
                   key={platform.name}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors animate-fade-in"
+                  className="p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors animate-fade-in"
                   style={{ animationDelay: `${0.2 + index * 0.05}s` }}
                 >
-                  <div className="flex items-center gap-4">
-                    <Icon className={`w-6 h-6 ${platform.color} flex-shrink-0`} />
-                    <div className="flex items-center gap-3">
-                      {platform.account?.profilePicture && (
-                        <img 
-                          src={platform.account.profilePicture} 
-                          alt={platform.account.displayName}
-                          className="w-10 h-10 rounded-full object-cover border-2 border-border"
-                        />
+                  {/* Mobile Layout: Stacked */}
+                  <div className="flex flex-col gap-3 sm:hidden">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-5 h-5 ${platform.color} flex-shrink-0`} />
+                        <div>
+                          <p className="font-medium text-sm">{platform.name}</p>
+                          {platform.account && (
+                            <p className="text-xs text-muted-foreground">@{platform.account.username}</p>
+                          )}
+                        </div>
+                      </div>
+                      {platform.connected && (
+                        <span className="relative flex h-3 w-3 flex-shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
                       )}
-                      <div>
-                        <p className="font-medium">{platform.name}</p>
-                        {platform.account && (
-                          <div className="text-sm text-muted-foreground">
-                            <p className="font-medium">{platform.account.displayName}</p>
-                            <p className="text-xs">@{platform.account.username}</p>
-                          </div>
+                    </div>
+                    
+                    {platform.account?.profilePicture && (
+                      <img 
+                        src={platform.account.profilePicture} 
+                        alt={platform.account.displayName}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-border self-start"
+                      />
+                    )}
+                    
+                    <Button
+                      variant={platform.connected ? "outline" : "default"}
+                      size="sm"
+                      onClick={() => platform.connected ? handleDisconnect(platform.name) : handleConnect(platform.name)}
+                      disabled={loading || (!platform.connected && !profileId)}
+                      className="w-full"
+                    >
+                      {loading ? "Loading..." : platform.connected ? "Disconnect" : "Connect"}
+                    </Button>
+                  </div>
+
+                  {/* Desktop Layout: Horizontal */}
+                  <div className="hidden sm:flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Icon className={`w-6 h-6 ${platform.color} flex-shrink-0`} />
+                      <div className="flex items-center gap-3">
+                        {platform.account?.profilePicture && (
+                          <img 
+                            src={platform.account.profilePicture} 
+                            alt={platform.account.displayName}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-border"
+                          />
                         )}
+                        <div>
+                          <p className="font-medium">{platform.name}</p>
+                          {platform.account && (
+                            <div className="text-sm text-muted-foreground">
+                              <p className="font-medium">{platform.account.displayName}</p>
+                              <p className="text-xs">@{platform.account.username}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {platform.connected ? (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                          </span>
-                          <span className="text-sm text-muted-foreground hidden sm:inline">Connected</span>
-                        </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {platform.connected ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                            <span className="text-sm text-muted-foreground">Connected</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDisconnect(platform.name)}
+                            disabled={loading}
+                          >
+                            Disconnect
+                          </Button>
+                        </>
+                      ) : (
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
-                          onClick={() => handleDisconnect(platform.name)}
-                          disabled={loading}
-                          className="h-8 px-3 text-xs"
+                          onClick={() => handleConnect(platform.name)}
+                          disabled={loading || !profileId}
                         >
-                          Disconnect
+                          {loading ? "Loading..." : "Connect"}
                         </Button>
-                      </>
-                    ) : (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleConnect(platform.name)}
-                        disabled={loading || !profileId}
-                      >
-                        {loading ? "Loading..." : "Connect"}
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               );
