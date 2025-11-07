@@ -13,6 +13,7 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { PlatformCard } from "@/components/PlatformCard";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { useTranslation } from "react-i18next";
 
 interface GetLateAccount {
   _id: string;
@@ -43,6 +44,7 @@ const profileFormSchema = z.object({
 });
 
 const Settings = () => {
+  const { t } = useTranslation();
   const [connectedAccounts, setConnectedAccounts] = useState<GetLateAccount[]>([]);
   const [loading, setLoading] = useState(false);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -90,7 +92,7 @@ const Settings = () => {
       });
     } catch (error) {
       console.error('Error loading profile:', error);
-      toast.error('Failed to load profile');
+      toast.error(t('settings.loadFailed'));
     }
   };
 
@@ -120,7 +122,7 @@ const Settings = () => {
     const username = urlParams.get('username');
     
     if (connected) {
-      toast.success(`${connected} connected successfully as @${username}!`);
+      toast.success(`${connected} ${t('settings.connectedSuccess')} @${username}!`);
       window.history.replaceState({}, '', window.location.pathname);
       // Refresh accounts after a short delay to let GetLate process
       setTimeout(() => {
@@ -145,7 +147,7 @@ const Settings = () => {
       setConnectedAccounts(data?.accounts || []);
     } catch (error) {
       console.error('Error fetching connected accounts:', error);
-      toast.error('Failed to load connected accounts');
+      toast.error(t('settings.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -153,7 +155,7 @@ const Settings = () => {
 
   const handleConnect = async (platform: string) => {
     if (!profileId) {
-      toast.error('Profile not initialized');
+      toast.error(t('settings.profileNotInit'));
       return;
     }
 
@@ -176,7 +178,7 @@ const Settings = () => {
       window.location.href = data.url;
     } catch (error) {
       console.error('Error initiating OAuth:', error);
-      toast.error('Failed to connect platform');
+      toast.error(t('settings.connectFailed'));
     }
   };
 
@@ -197,7 +199,7 @@ const Settings = () => {
     const account = getAccountInfo(platform);
     if (!account || !profileId) return;
 
-    if (!confirm(`Are you sure you want to disconnect ${platform}?`)) return;
+    if (!confirm(`${t('settings.disconnectConfirm')} ${platform}?`)) return;
 
     try {
       const { error } = await supabase.functions.invoke('getlate-connect', {
@@ -210,11 +212,11 @@ const Settings = () => {
 
       if (error) throw error;
       
-      toast.success(`${platform} disconnected successfully`);
+      toast.success(`${platform} ${t('settings.disconnectedSuccess')}`);
       await fetchConnectedAccounts(profileId);
     } catch (error) {
       console.error('Error disconnecting account:', error);
-      toast.error(`Failed to disconnect ${platform}`);
+      toast.error(t('settings.disconnectFailed'));
     }
   };
 
@@ -228,13 +230,13 @@ const Settings = () => {
 
     // Validate file type
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
-      toast.error('Please upload a valid image file (JPEG, PNG, WEBP, or GIF)');
+      toast.error(t('settings.avatarFileType'));
       return;
     }
 
     // Validate file size (5MB)
     if (file.size > 5242880) {
-      toast.error('Image size must be less than 5MB');
+      toast.error(t('settings.avatarFileSize'));
       return;
     }
 
@@ -278,10 +280,10 @@ const Settings = () => {
       if (updateError) throw updateError;
 
       setProfile({ ...profile, avatar_url: publicUrl });
-      toast.success('Avatar updated successfully');
+      toast.success(t('settings.avatarUpdated'));
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload avatar');
+      toast.error(t('settings.avatarUploadFailed'));
     } finally {
       setAvatarUploading(false);
     }
@@ -303,10 +305,10 @@ const Settings = () => {
       if (error) throw error;
 
       setProfile(prev => prev ? { ...prev, username: values.username, email: values.email } : null);
-      toast.success('Profile updated successfully');
+      toast.success(t('settings.profileUpdated'));
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(t('settings.profileUpdateFailed'));
     }
   };
 
@@ -352,18 +354,18 @@ const Settings = () => {
     <div className="p-3 sm:p-4 md:p-6">
       <div className="mb-4 sm:mb-6 animate-fade-in">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Account Settings
+          {t('settings.title')}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-1">
-          Manage your profile and connected platforms
+          {t('settings.subtitle')}
         </p>
       </div>
 
       <Card className="animate-fade-in mb-6">
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
+          <CardTitle>{t('settings.profile')}</CardTitle>
           <CardDescription>
-            Update your account details and profile picture
+            {t('settings.profileDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -403,9 +405,9 @@ const Settings = () => {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>{t('settings.username')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter username" {...field} />
+                        <Input placeholder={t('settings.usernamePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -416,16 +418,16 @@ const Settings = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('settings.email')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter email" type="email" {...field} />
+                        <Input placeholder={t('settings.emailPlaceholder')} type="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+                  {form.formState.isSubmitting ? t('settings.saving') : t('settings.saveChanges')}
                 </Button>
               </form>
             </Form>
@@ -435,9 +437,9 @@ const Settings = () => {
 
       <Card className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
         <CardHeader>
-          <CardTitle>Connected Platforms</CardTitle>
+          <CardTitle>{t('settings.connectedPlatforms')}</CardTitle>
           <CardDescription>
-            Connect your social media accounts to start posting (powered by GetLate)
+            {t('settings.connectedPlatformsDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

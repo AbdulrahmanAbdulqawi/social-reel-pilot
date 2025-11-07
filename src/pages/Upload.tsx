@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ type MediaFile = {
 
 const Upload = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
@@ -68,7 +70,7 @@ const Upload = () => {
 
       const getlateProfileId = profileData?.getlate_profile_id;
       if (!getlateProfileId) {
-        toast.error('No GetLate profile linked. Please go to Settings to connect platforms.');
+        toast.error(t('upload.noPlatforms') + ' ' + t('upload.goToSettings'));
         setLoadingAccounts(false);
         return;
       }
@@ -89,11 +91,11 @@ const Upload = () => {
       setAccounts(connectedAccounts.filter((acc: GetLateAccount) => acc.isActive));
 
       if (connectedAccounts.length === 0) {
-        toast.info('No platforms connected. Please go to Settings to connect your accounts.');
+        toast.info(t('upload.noPlatforms') + ' ' + t('upload.goToSettings'));
       }
     } catch (error) {
       console.error('Error loading GetLate accounts:', error);
-      toast.error('Failed to load connected accounts');
+      toast.error(t('upload.error'));
     } finally {
       setLoadingAccounts(false);
     }
@@ -107,7 +109,7 @@ const Upload = () => {
     
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} exceeds 100MB limit`);
+        toast.error(`${file.name} ${t('upload.fileSizeError')}`);
         continue;
       }
       
@@ -115,7 +117,7 @@ const Upload = () => {
       const isImage = file.type.startsWith("image/");
       
       if (!isVideo && !isImage) {
-        toast.error(`${file.name} is not a valid image or video`);
+        toast.error(`${file.name} ${t('upload.fileTypeError')}`);
         continue;
       }
       
@@ -150,17 +152,17 @@ const Upload = () => {
     e.preventDefault();
     
     if (selectedPlatforms.length === 0) {
-      toast.error("Please select at least one platform");
+      toast.error(t('upload.platformsRequired'));
       return;
     }
 
     if (!title.trim()) {
-      toast.error("Title is required");
+      toast.error(t('upload.titleRequired'));
       return;
     }
 
     if (mediaFiles.length === 0 && !caption.trim()) {
-      toast.error("Please add media files or write a caption");
+      toast.error(t('upload.mediaOrCaption'));
       return;
     }
 
@@ -248,7 +250,7 @@ const Upload = () => {
       if (insertError) throw insertError;
 
       // Post to GetLate with multiple platforms
-      toast.info(`Posting to ${selectedAccounts.length} platform(s)...`);
+      toast.info(`${t('upload.posting')} ${selectedAccounts.length} ${t('upload.platformCount')}`);
       
       const { data: postResult, error: postError } = await supabase.functions.invoke('getlate-post', {
         body: {
@@ -278,11 +280,11 @@ const Upload = () => {
 
       console.log('GetLate post result:', postResult);
 
-      toast.success(`Content ${scheduledFor ? 'scheduled' : 'posted'} to ${selectedAccounts.length} platform(s)!`);
+      toast.success(`${t(scheduledFor ? 'upload.scheduled' : 'upload.posted')} ${selectedAccounts.length} ${t('upload.platformCount')}`);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating reel:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create reel");
+      toast.error(error instanceof Error ? error.message : t('upload.error'));
     } finally {
       setLoading(false);
     }
@@ -292,16 +294,16 @@ const Upload = () => {
     <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
       <Card>
         <CardHeader className="space-y-1 px-4 sm:px-6">
-          <CardTitle className="text-xl sm:text-2xl">Create New Post</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">{t('upload.title')}</CardTitle>
           <CardDescription className="text-sm">
-            Share your content across multiple platforms
+            {t('upload.subtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Media Upload Section */}
             <div className="space-y-4">
-              <Label>Media Files (Optional)</Label>
+              <Label>{t('upload.mediaOptional')}</Label>
               <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                 <input
                   id="media"
@@ -315,9 +317,9 @@ const Upload = () => {
                   <div className="flex flex-col items-center gap-2">
                     <UploadIcon className="w-10 h-10 text-muted-foreground" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Upload images or videos</p>
+                      <p className="text-sm font-medium">{t('upload.dragDrop')}</p>
                       <p className="text-xs text-muted-foreground">
-                        Multiple files supported • Max 100MB each
+                        {t('upload.multipleSupport')}
                       </p>
                     </div>
                   </div>
@@ -357,10 +359,10 @@ const Upload = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">{t('upload.videoTitle')} *</Label>
               <Input
                 id="title"
-                placeholder="Enter reel title"
+                placeholder={t('upload.titlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -368,10 +370,10 @@ const Upload = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="caption">Caption</Label>
+              <Label htmlFor="caption">{t('upload.caption')}</Label>
               <Textarea
                 id="caption"
-                placeholder="Write your caption here..."
+                placeholder={t('upload.captionPlaceholder')}
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 rows={4}
@@ -379,10 +381,10 @@ const Upload = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="hashtags">Hashtags</Label>
+              <Label htmlFor="hashtags">{t('upload.hashtags')}</Label>
               <Input
                 id="hashtags"
-                placeholder="trending, viral, creator (comma-separated)"
+                placeholder={t('upload.hashtagsPlaceholder')}
                 value={hashtags}
                 onChange={(e) => setHashtags(e.target.value)}
               />
@@ -390,12 +392,12 @@ const Upload = () => {
 
             {/* Platform Selection */}
             <div className="space-y-3">
-              <Label>Platforms to Post *</Label>
+              <Label>{t('upload.platforms')} *</Label>
               {loadingAccounts ? (
-                <p className="text-sm text-muted-foreground">Loading platforms...</p>
+                <p className="text-sm text-muted-foreground">{t('upload.loadingPlatforms')}</p>
               ) : accounts.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No accounts connected. <a href="/settings" className="text-primary underline">Go to Settings</a> to connect your platforms.
+                  {t('upload.noPlatforms')} <a href="/settings" className="text-primary underline">{t('upload.goToSettings')}</a> {t('upload.connectPlatforms')}
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -445,7 +447,7 @@ const Upload = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="date">Schedule Date</Label>
+                <Label htmlFor="date">{t('upload.scheduleDate')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -454,7 +456,7 @@ const Upload = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="time">Schedule Time</Label>
+                <Label htmlFor="time">{t('upload.scheduleTime')}</Label>
                 <Input
                   id="time"
                   type="time"
@@ -471,14 +473,14 @@ const Upload = () => {
                 onClick={() => navigate("/dashboard")}
                 className="flex-1"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="submit" 
                 disabled={loading || selectedPlatforms.length === 0 || loadingAccounts}
                 className="flex-1"
               >
-                {loading ? "Posting..." : `Post to ${selectedPlatforms.length || 0} Platform(s)`}
+                {loading ? t('common.uploading') : `${t('upload.uploadNow')} ${selectedPlatforms.length || 0} Platform(s)`}
               </Button>
             </div>
           </form>

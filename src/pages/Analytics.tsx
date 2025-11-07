@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart3, TrendingUp, Users, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface AnalyticsData {
   totalViews: number;
@@ -23,6 +24,7 @@ interface AnalyticsData {
 }
 
 const Analytics = () => {
+  const { t } = useTranslation();
   const [loadingStats, setLoadingStats] = useState(true);
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalViews: 0,
@@ -204,28 +206,28 @@ const Analytics = () => {
 
   const stats = [
     {
-      title: "Total Views",
+      title: t('analytics.totalViews'),
       value: formatNumber(analytics.totalViews),
       icon: Eye,
-      detail: `${analytics.totalViews.toLocaleString()} total views`,
+      detail: `${analytics.totalViews.toLocaleString()} ${t('analytics.totalViewsDetail')}`,
     },
     {
-      title: "Engagement Rate",
+      title: t('analytics.engagement'),
       value: `${analytics.avgEngagementRate.toFixed(1)}%`,
       icon: TrendingUp,
-      detail: "Average across all posts",
+      detail: t('analytics.engagementDetail'),
     },
     {
-      title: "Total Likes",
+      title: t('analytics.totalLikes'),
       value: formatNumber(analytics.totalLikes),
       icon: Users,
-      detail: `${analytics.totalLikes.toLocaleString()} total likes`,
+      detail: `${analytics.totalLikes.toLocaleString()} ${t('analytics.totalLikesDetail')}`,
     },
     {
-      title: "Total Interactions",
+      title: t('analytics.totalInteractions'),
       value: formatNumber(analytics.totalLikes + analytics.totalComments + analytics.totalShares),
       icon: BarChart3,
-      detail: "Likes + Comments + Shares",
+      detail: t('analytics.interactionsDetail'),
     },
   ];
 
@@ -233,9 +235,9 @@ const Analytics = () => {
     <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <div className="animate-fade-in">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Analytics
+          {t('analytics.title')}
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">Track your performance across platforms</p>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">{t('analytics.subtitle')}</p>
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -267,8 +269,8 @@ const Analytics = () => {
       <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
         <Card className="hover-scale">
           <CardHeader>
-            <CardTitle>Platform Performance</CardTitle>
-            <CardDescription>Views by platform</CardDescription>
+            <CardTitle>{t('analytics.platformPerformance')}</CardTitle>
+            <CardDescription>{t('analytics.platformPerformanceDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingStats ? (
@@ -285,7 +287,7 @@ const Analytics = () => {
               </div>
             ) : analytics.platformBreakdown.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No platform data available yet
+                {t('analytics.noPlatformData')}
               </p>
             ) : (
               <div className="space-y-4">
@@ -315,8 +317,8 @@ const Analytics = () => {
 
         <Card className="hover-scale">
           <CardHeader>
-            <CardTitle>Top Performing Posts</CardTitle>
-            <CardDescription>Based on views and engagement</CardDescription>
+            <CardTitle>{t('analytics.topPerforming')}</CardTitle>
+            <CardDescription>{t('analytics.topPerformingDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingStats ? (
@@ -330,7 +332,7 @@ const Analytics = () => {
               </div>
             ) : analytics.topPosts.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No posts published yet
+                {t('analytics.noPosts')}
               </p>
             ) : (
               <div className="space-y-4">

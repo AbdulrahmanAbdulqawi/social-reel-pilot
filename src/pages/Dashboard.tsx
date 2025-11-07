@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import { ReelCard } from "@/components/ReelCard";
 import { EditReelDialog } from "@/components/EditReelDialog";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ interface Reel {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [reels, setReels] = useState<Reel[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
@@ -67,7 +69,7 @@ const Dashboard = () => {
       if (error) throw error;
       setReels(data || []);
     } catch (error) {
-      toast.error("Failed to load reels");
+      toast.error(t('dashboard.loadFailed'));
       console.error(error);
     } finally {
       setLoading(false);
@@ -83,7 +85,7 @@ const Dashboard = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm(t('dashboard.deleteConfirm'))) return;
     
     try {
       const { error } = await supabase
@@ -93,10 +95,10 @@ const Dashboard = () => {
 
       if (error) throw error;
       
-      toast.success("Post deleted successfully");
+      toast.success(t('dashboard.deleteSuccess'));
       fetchReels();
     } catch (error) {
-      toast.error("Failed to delete post");
+      toast.error(t('dashboard.deleteFailed'));
       console.error(error);
     }
   };
@@ -127,16 +129,16 @@ const Dashboard = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 animate-fade-in">
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Dashboard
+            {t('dashboard.title')}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">Manage and track your social media content</p>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
         </div>
         <Button 
           onClick={() => navigate("/upload")} 
           className="gap-2 hover-scale shadow-lg w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
-          <span className="sm:inline">Create Post</span>
+          <span className="sm:inline">{t('dashboard.createPost')}</span>
         </Button>
       </div>
 
@@ -147,7 +149,7 @@ const Dashboard = () => {
           <div className="relative">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-              Total Posts
+              {t('dashboard.totalPosts')}
             </div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold">{reels.length}</div>
           </div>
@@ -158,7 +160,7 @@ const Dashboard = () => {
           <div className="relative">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              Scheduled
+              {t('dashboard.scheduled')}
             </div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
               {reels.filter((r) => r.status === "scheduled").length}
@@ -171,7 +173,7 @@ const Dashboard = () => {
           <div className="relative">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
               <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              Posted
+              {t('dashboard.posted')}
             </div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-600">
               {reels.filter((r) => r.status === "posted").length}
@@ -182,24 +184,24 @@ const Dashboard = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="draft">Drafts</TabsTrigger>
-          <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-          <TabsTrigger value="posted">Posted</TabsTrigger>
+          <TabsTrigger value="all">{t('dashboard.all')}</TabsTrigger>
+          <TabsTrigger value="draft">{t('dashboard.drafts')}</TabsTrigger>
+          <TabsTrigger value="scheduled">{t('dashboard.scheduled')}</TabsTrigger>
+          <TabsTrigger value="posted">{t('dashboard.posted')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
           {filteredReels.length === 0 ? (
             <EmptyState
               icon={Video}
-              title={activeTab === "all" ? "No posts yet" : `No ${activeTab} posts`}
+              title={activeTab === "all" ? t('dashboard.noReels') : t(`dashboard.no${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`)}
               description={
                 activeTab === "all"
-                  ? "Start creating your first social media post and schedule it across platforms"
-                  : `You don't have any ${activeTab} posts at the moment`
+                  ? t('dashboard.noReelsDesc')
+                  : `${t('empty.noResults')}`
               }
               action={{
-                label: "Create Your First Post",
+                label: t('dashboard.uploadFirst'),
                 onClick: () => navigate("/upload"),
               }}
             />
