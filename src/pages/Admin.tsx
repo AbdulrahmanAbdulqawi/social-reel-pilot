@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { adminInvoke } from "@/lib/adminHelper";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -87,14 +88,6 @@ export default function Admin() {
     ]);
   };
 
-  const adminInvoke = async (action: string, body: any = {}) => {
-    const { data, error } = await supabase.functions.invoke('admin-panel', {
-      body: { action, ...body }
-    });
-
-    if (error) throw error;
-    return data;
-  };
 
   const loadStats = async () => {
     try {
