@@ -90,13 +90,35 @@ Deno.serve(async (req) => {
       case 'list-users': {
         const { data: profiles, error } = await supabase
           .from('profiles')
-          .select('*, user_subscriptions(*), user_roles(role)')
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
+        // Get subscriptions and roles separately
+        const enrichedProfiles = await Promise.all(
+          profiles.map(async (profile: any) => {
+            const { data: subscription } = await supabase
+              .from('user_subscriptions')
+              .select('*')
+              .eq('user_id', profile.id)
+              .single();
+
+            const { data: roles } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', profile.id);
+
+            return {
+              ...profile,
+              user_subscriptions: subscription || null,
+              user_roles: roles || []
+            };
+          })
+        );
+
         await logAdminAction(supabase, user.id, 'list_users', 'user');
-        return jsonResponse({ users: profiles });
+        return jsonResponse({ users: enrichedProfiles });
       }
 
       case 'update-user': {
@@ -303,13 +325,29 @@ Deno.serve(async (req) => {
       case 'list-subscriptions': {
         const { data: subscriptions, error } = await supabase
           .from('user_subscriptions')
-          .select('*, profiles(email, username)')
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
+        // Enrich with profile data
+        const enrichedSubscriptions = await Promise.all(
+          subscriptions.map(async (subscription: any) => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email, username')
+              .eq('id', subscription.user_id)
+              .single();
+
+            return {
+              ...subscription,
+              profiles: profile || null
+            };
+          })
+        );
+
         await logAdminAction(supabase, user.id, 'list_subscriptions', 'subscription');
-        return jsonResponse({ subscriptions });
+        return jsonResponse({ subscriptions: enrichedSubscriptions });
       }
 
       case 'update-subscription': {
