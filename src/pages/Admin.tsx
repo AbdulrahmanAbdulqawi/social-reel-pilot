@@ -40,6 +40,9 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [roleDialog, setRoleDialog] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [assignDialog, setAssignDialog] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   useEffect(() => {
     checkAdminAccess();
@@ -207,6 +210,36 @@ export default function Admin() {
         title: "Profile Creation Failed",
         description: errorMessage,
         duration: 5000
+      });
+    }
+  };
+
+  const handleAssignProfile = async () => {
+    if (!selectedProfile || !selectedUserId) return;
+
+    try {
+      await adminInvoke('reassign-profile', {
+        profileId: selectedProfile._id,
+        toUserId: selectedUserId,
+        fromUserId: selectedProfile.linkedUser?.id
+      });
+
+      toast({
+        variant: "success",
+        title: "Success",
+        description: "Profile assigned successfully"
+      });
+
+      setAssignDialog(false);
+      setSelectedProfile(null);
+      setSelectedUserId("");
+      await loadProfiles();
+      await loadStats();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to assign profile"
       });
     }
   };
@@ -455,15 +488,29 @@ export default function Admin() {
                           </TableCell>
                           <TableCell>{profile.accounts?.length || 0}</TableCell>
                           <TableCell>
-                            {profile.linkedUser && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleReleaseProfile(profile._id, profile.linkedUser.id)}
-                              >
-                                Release
-                              </Button>
-                            )}
+                            <div className="flex gap-2">
+                              {profile.linkedUser ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleReleaseProfile(profile._id, profile.linkedUser.id)}
+                                >
+                                  Release
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  onClick={() => {
+                                    setSelectedProfile(profile);
+                                    setAssignDialog(true);
+                                  }}
+                                >
+                                  <UserPlus className="h-4 w-4 mr-1" />
+                                  Assign
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -620,6 +667,45 @@ export default function Admin() {
             </Button>
             <Button onClick={handleAssignRole}>
               Assign Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Assignment Dialog */}
+      <Dialog open={assignDialog} onOpenChange={setAssignDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Profile to User</DialogTitle>
+            <DialogDescription>
+              Assign profile {selectedProfile?.name} to a user
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="user">Select User</Label>
+              <Select onValueChange={setSelectedUserId} value={selectedUserId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users
+                    .filter(u => !u.getlate_profile_id)
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.email} {user.username ? `(${user.username})` : ''}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssignProfile}>
+              Assign Profile
             </Button>
           </DialogFooter>
         </DialogContent>
