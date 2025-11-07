@@ -56,11 +56,11 @@ All colors MUST be HSL.
 
     /* Sidebar colors */
     --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 98%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 51 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 51 100% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 51 100% 50%;
 
@@ -106,11 +106,11 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 20px hsl(51 100% 60% / 0.4);
     
     --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 98%;
+    --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 51 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 51 100% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 51 100% 50%;
   }

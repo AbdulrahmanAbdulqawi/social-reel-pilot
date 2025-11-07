@@ -93,28 +93,35 @@ const Onboarding = () => {
   const handleStepComplete = async () => {
     const newCompletedSteps = [...completedSteps, currentStep];
     setCompletedSteps(newCompletedSteps);
+    
+    toast.success(`✅ ${MILESTONES[currentStep].title} completed!`);
 
     if (currentStep === MILESTONES.length - 1) {
-      // Final step completed
-      setShowCelebration(true);
-      await saveProgress(currentStep + 1, true);
-      
-      // Trigger confetti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#8B8000', '#FFD700', '#FFF']
-      });
-
-      setTimeout(() => {
-        toast.success("🎉 Onboarding completed! Welcome to ReelHub!");
-        navigate("/dashboard");
-      }, 2000);
+      // Final step - just move forward but don't auto-complete
+      setCurrentStep(currentStep + 1);
+      await saveProgress(currentStep + 1);
     } else {
       setCurrentStep(currentStep + 1);
       await saveProgress(currentStep + 1);
     }
+  };
+
+  const handleFinishOnboarding = async () => {
+    setShowCelebration(true);
+    await saveProgress(MILESTONES.length, true);
+    
+    // Trigger confetti
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#8B8000', '#FFD700', '#FFF']
+    });
+
+    setTimeout(() => {
+      toast.success("🎉 Onboarding completed! Welcome to ReelHub!");
+      navigate("/dashboard");
+    }, 2000);
   };
 
   const handleSkip = async () => {
@@ -252,6 +259,25 @@ const Onboarding = () => {
                   Mark as Complete
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* All Steps Completed - Show Finish Button */}
+          {!currentMilestone && !showCelebration && completedSteps.length === MILESTONES.length && (
+            <div className="bg-card border border-primary rounded-lg p-6 mb-6 animate-fade-in text-center">
+              <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-primary via-primary-light to-primary-glow bg-clip-text text-transparent">
+                All Steps Completed! 🎯
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                You've explored all the features. Ready to start your journey?
+              </p>
+              <Button
+                onClick={handleFinishOnboarding}
+                className="bg-gradient-to-r from-primary to-primary-light hover:shadow-glow transition-all"
+                size="lg"
+              >
+                Finish & Start Creating
+              </Button>
             </div>
           )}
 
