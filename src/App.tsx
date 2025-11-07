@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { RTLWrapper } from "@/components/RTLWrapper";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -43,7 +44,7 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SidebarProvider>
-                    <div className="flex min-h-screen w-full">
+                    <RTLWrapper>
                       <AppSidebar />
                       <main className="flex-1 overflow-auto">
                         <div className="sticky top-0 z-10 glass border-b p-2 sm:p-3">
@@ -62,7 +63,7 @@ const App = () => (
                           </Routes>
                         </ErrorBoundary>
                       </main>
-                    </div>
+                    </RTLWrapper>
                   </SidebarProvider>
                 </ProtectedRoute>
               }

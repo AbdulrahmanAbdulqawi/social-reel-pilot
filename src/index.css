@@ -207,20 +207,43 @@ All colors MUST be HSL.
   direction: rtl;
 }
 
-/* RTL Sidebar positioning */
-[dir="rtl"] .sidebar,
+/* RTL Sidebar positioning - Fixed for Shadcn Sidebar */
 [dir="rtl"] [data-sidebar="sidebar"] {
   left: auto !important;
   right: 0 !important;
-  border-left: 1px solid hsl(var(--border));
+  border-left: 1px solid hsl(var(--sidebar-border));
   border-right: none;
 }
 
-[dir="rtl"] main {
-  margin-left: 0;
-  margin-right: var(--sidebar-width);
+[dir="rtl"] .group[data-sidebar="sidebar"] {
+  left: auto !important;
+  right: 0 !important;
 }
 
+/* RTL Main content adjustment */
+[dir="rtl"] main {
+  margin-left: 0 !important;
+}
+
+[dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] ~ main,
+[dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] + * {
+  margin-right: var(--sidebar-width, 16rem);
+  margin-left: 0;
+}
+
+[dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] ~ main,
+[dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] + * {
+  margin-right: var(--sidebar-width-icon, 3rem);
+  margin-left: 0;
+}
+
+/* RTL Sheet (mobile sidebar) positioning */
+[dir="rtl"] [data-sidebar="sidebar"][data-mobile="true"] {
+  right: 0;
+  left: auto;
+}
+
+/* General RTL utilities */
 [dir="rtl"] .text-left {
   text-align: right;
 }
@@ -229,10 +252,20 @@ All colors MUST be HSL.
   text-align: left;
 }
 
-[dir="rtl"] .mr-2,
-[dir="rtl"] .mr-4,
+/* RTL Margins */
+[dir="rtl"] .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+[dir="rtl"] .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
 [dir="rtl"] .mr-6 {
   margin-right: 0;
+  margin-left: 1.5rem;
 }
 
 [dir="rtl"] .ml-2 {
@@ -250,6 +283,12 @@ All colors MUST be HSL.
   margin-left: 0;
 }
 
+/* RTL Flex direction */
 [dir="rtl"] .gap-2 {
+  flex-direction: row-reverse;
+}
+
+/* RTL Icons and buttons */
+[dir="rtl"] .flex.items-center.gap-2 {
   flex-direction: row-reverse;
 }

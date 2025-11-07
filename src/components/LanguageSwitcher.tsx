@@ -22,6 +22,9 @@ export function LanguageSwitcher() {
     const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.dir = dir;
     document.documentElement.lang = i18n.language;
+    
+    // Force re-render of layout by triggering a resize event
+    window.dispatchEvent(new Event('resize'));
   }, [i18n.language]);
 
   const changeLanguage = (lng: string) => {
