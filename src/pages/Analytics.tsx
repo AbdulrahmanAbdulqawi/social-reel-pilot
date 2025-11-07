@@ -230,15 +230,15 @@ const Analytics = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <div className="animate-fade-in">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Analytics
         </h1>
-        <p className="text-muted-foreground mt-1">Track your performance across platforms</p>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">Track your performance across platforms</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
         {stats.map((stat, index) => (
           <Card key={stat.title} className="animate-fade-in hover-scale" style={{ animationDelay: `${0.1 + index * 0.05}s` }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -264,7 +264,7 @@ const Analytics = () => {
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 animate-fade-in" style={{ animationDelay: "0.3s" }}>
         <Card className="hover-scale">
           <CardHeader>
             <CardTitle>Platform Performance</CardTitle>

@@ -349,12 +349,12 @@ const Settings = () => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="mb-6 animate-fade-in">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="mb-4 sm:mb-6 animate-fade-in">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Account Settings
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
           Manage your profile and connected platforms
         </p>
       </div>

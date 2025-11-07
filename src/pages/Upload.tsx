@@ -289,16 +289,16 @@ const Upload = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Create New Post</CardTitle>
-          <CardDescription>
+        <CardHeader className="space-y-1 px-4 sm:px-6">
+          <CardTitle className="text-xl sm:text-2xl">Create New Post</CardTitle>
+          <CardDescription className="text-sm">
             Share your content across multiple platforms
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="px-4 sm:px-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Media Upload Section */}
             <div className="space-y-4">
               <Label>Media Files (Optional)</Label>
@@ -326,7 +326,7 @@ const Upload = () => {
 
               {/* Preview uploaded files */}
               {mediaFiles.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   {mediaFiles.map((media, index) => (
                     <div key={index} className="relative group rounded-lg overflow-hidden border">
                       {media.type === 'video' ? (
@@ -398,7 +398,7 @@ const Upload = () => {
                   No accounts connected. <a href="/settings" className="text-primary underline">Go to Settings</a> to connect your platforms.
                 </p>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {accounts.map((account) => {
                     const getPlatformIcon = (platform: string) => {
                       const iconClass = "w-5 h-5";
@@ -443,7 +443,7 @@ const Upload = () => {
               )}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="date">Schedule Date</Label>
                 <Input
@@ -464,7 +464,7 @@ const Upload = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 type="button"
                 variant="outline"

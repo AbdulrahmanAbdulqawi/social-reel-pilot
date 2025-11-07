@@ -44,7 +44,7 @@ const App = () => (
                   <div className="flex min-h-screen w-full">
                     <AppSidebar />
                     <main className="flex-1 overflow-auto">
-                      <div className="sticky top-0 z-10 bg-background border-b p-2">
+                      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b p-2 sm:p-3">
                         <SidebarTrigger />
                       </div>
                        <Routes>
