@@ -43,15 +43,37 @@ const Auth = () => {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session && !isRegistering) {
-        navigate("/dashboard");
+        // Check if onboarding is completed
+        const { data } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", session.user.id)
+          .single();
+
+        if (data?.onboarding_completed === false) {
+          navigate("/onboarding");
+        } else {
+          navigate("/dashboard");
+        }
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && !isRegistering) {
-        navigate("/dashboard");
+        // Check if onboarding is completed
+        const { data } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", session.user.id)
+          .single();
+
+        if (data?.onboarding_completed === false) {
+          navigate("/onboarding");
+        } else {
+          navigate("/dashboard");
+        }
       }
     });
 
@@ -148,7 +170,7 @@ const Auth = () => {
       toast.success("Account created successfully!");
       setIsRegistering(false);
       setLoading(false);
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');

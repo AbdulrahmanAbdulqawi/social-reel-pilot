@@ -81,6 +81,9 @@ export type Database = {
           email: string | null
           getlate_profile_id: string | null
           id: string
+          onboarding_completed: boolean | null
+          onboarding_started_at: string | null
+          onboarding_step: number | null
           updated_at: string
           username: string | null
         }
@@ -90,6 +93,9 @@ export type Database = {
           email?: string | null
           getlate_profile_id?: string | null
           id: string
+          onboarding_completed?: boolean | null
+          onboarding_started_at?: string | null
+          onboarding_step?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -99,6 +105,9 @@ export type Database = {
           email?: string | null
           getlate_profile_id?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          onboarding_started_at?: string | null
+          onboarding_step?: number | null
           updated_at?: string
           username?: string | null
         }

@@ -18,6 +18,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +47,8 @@ const App = () => (
                       <div className="sticky top-0 z-10 bg-background border-b p-2">
                         <SidebarTrigger />
                       </div>
-                      <Routes>
+                       <Routes>
+                        <Route path="/onboarding" element={<Onboarding />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/upload" element={<Upload />} />
                         <Route path="/analytics" element={<Analytics />} />
