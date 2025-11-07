@@ -34,9 +34,16 @@ export async function adminInvoke(action: string, body: any = {}) {
   });
 
   if (error) {
-    // Try to extract detailed error message
-    const errorMessage = data?.error || error.message || 'Unknown error occurred';
-    throw new Error(errorMessage);
+    console.error('Admin invoke error:', { error, data });
+    
+    // The error message is in the FunctionsHttpError context
+    // We need to fetch it from the response
+    throw error;
+  }
+  
+  // Check if response contains an error field
+  if (data?.error) {
+    throw new Error(data.error);
   }
   
   return data;

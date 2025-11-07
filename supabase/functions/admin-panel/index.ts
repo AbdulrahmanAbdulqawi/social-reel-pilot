@@ -275,18 +275,21 @@ Deno.serve(async (req) => {
           const errText = await res.text();
           console.error('GetLate profile creation failed:', res.status, errText);
           
-          // Try to parse the error response
+          // Try to parse the error response from GetLate
+          let errorMessage = 'Failed to create profile';
           try {
             const errorData = JSON.parse(errText);
             if (errorData.error) {
-              // Return the specific error message from GetLate
-              return jsonError(errorData.error, res.status);
+              errorMessage = errorData.error;
+              console.error('GetLate error details:', errorData);
             }
           } catch (e) {
-            // If parsing fails, return the raw error
+            console.error('Failed to parse GetLate error:', e);
+            errorMessage = `Failed to create profile: ${errText}`;
           }
           
-          return jsonError(`Failed to create profile: ${errText}`, res.status);
+          // Return 200 with error in body so client can parse it
+          return jsonResponse({ error: errorMessage, success: false });
         }
 
         const data = await res.json();
