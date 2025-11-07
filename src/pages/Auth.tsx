@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ensureUserHasGetLateProfile, checkFreeProfileAvailability } from "@/lib/getlateProfile";
+import { checkFreeProfileAvailability } from "@/lib/getlateProfile";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
@@ -98,44 +98,20 @@ const Auth = () => {
       if (!authData.user) {
         throw new Error('Failed to create user account');
       }
-
-      // Step 2: Wait for profile to be created by trigger (with retry logic)
-      let profileExists = false;
-      let retries = 0;
-      const maxRetries = 10; // 5 seconds total (10 * 500ms)
-      
-      while (!profileExists && retries < maxRetries) {
-        const { data: profileCheck } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', authData.user.id)
-          .maybeSingle();
-        
-        if (profileCheck) {
-          profileExists = true;
-        } else {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          retries++;
-        }
+      // If email confirmation is required, there will be no session yet.
+      // Immediately show the verification screen and stop here.
+      if (!authData.session) {
+        toast.success("Account created! Please check your email to verify your account.");
+        setVerificationEmailSent(true);
+        setVerificationEmail(email);
+        setIsRegistering(false);
+        return;
       }
 
-      if (!profileExists) {
-        throw new Error('Profile creation timed out. Please try logging in.');
-      }
-
-      // Step 3: Ensure a GetLate profile exists and link it to the user
-      const linkedId = await ensureUserHasGetLateProfile();
-
-      if (!linkedId) {
-        // Sign out the user since we couldn't link a profile
-        await supabase.auth.signOut();
-        throw new Error('No GetLate profiles available. Please contact support.');
-      }
-
-      toast.success("Account created! Please check your email to verify your account.");
-      setVerificationEmailSent(true);
-      setVerificationEmail(email);
+      // If a session exists (auto-confirm environments), navigate to dashboard
+      toast.success("Account created!");
       setIsRegistering(false);
+      navigate("/dashboard");
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
