@@ -1,6 +1,7 @@
 import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard, Mail } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sidebar,
   SidebarContent,
@@ -28,10 +29,11 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const navigate = useNavigate();
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     checkIsAdmin().then(setIsAdmin);
@@ -43,6 +45,12 @@ export function AppSidebar() {
       toast.error("Error signing out");
     } else {
       navigate("/auth");
+    }
+  };
+
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpen(false);
     }
   };
 
@@ -71,6 +79,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
+                        onClick={handleNavClick}
                         className={({ isActive }) =>
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -89,6 +98,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to="/admin"
+                      onClick={handleNavClick}
                       className={({ isActive }) =>
                         isActive
                           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
