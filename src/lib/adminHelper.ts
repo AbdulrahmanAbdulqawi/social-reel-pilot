@@ -33,16 +33,22 @@ export async function adminInvoke(action: string, body: any = {}) {
     body: { action, ...body }
   });
 
+  console.log('Admin invoke response:', { action, data, error });
+
   if (error) {
-    console.error('Admin invoke error:', { error, data });
-    
-    // The error message is in the FunctionsHttpError context
-    // We need to fetch it from the response
+    console.error('Admin invoke HTTP error:', error);
     throw error;
   }
   
-  // Check if response contains an error field
+  // Check if response contains an error field (for 200 responses with errors)
   if (data?.error) {
+    console.error('Admin invoke returned error in body:', data.error);
+    throw new Error(data.error);
+  }
+  
+  // Also check for success: false
+  if (data?.success === false && data?.error) {
+    console.error('Admin invoke failed:', data.error);
     throw new Error(data.error);
   }
   
