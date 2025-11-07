@@ -8,7 +8,7 @@ const corsHeaders = {
 const GETLATE_API_URL = 'https://getlate.dev/api/v1';
 
 // Import Supabase client
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // --- Main Handler ---
 Deno.serve(async (req) => {
