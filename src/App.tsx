@@ -30,7 +30,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<Admin />} />
@@ -53,6 +52,7 @@ const App = () => (
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/subscription" element={<Subscription />} />
+                        <Route path="/contact" element={<Contact />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
