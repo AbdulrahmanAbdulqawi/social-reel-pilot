@@ -207,9 +207,18 @@ All colors MUST be HSL.
   direction: rtl;
 }
 
-[dir="rtl"] .sidebar {
+/* RTL Sidebar positioning */
+[dir="rtl"] .sidebar,
+[dir="rtl"] [data-sidebar="sidebar"] {
+  left: auto !important;
+  right: 0 !important;
   border-left: 1px solid hsl(var(--border));
   border-right: none;
+}
+
+[dir="rtl"] main {
+  margin-left: 0;
+  margin-right: var(--sidebar-width);
 }
 
 [dir="rtl"] .text-left {
