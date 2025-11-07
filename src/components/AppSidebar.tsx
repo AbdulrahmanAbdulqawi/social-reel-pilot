@@ -1,4 +1,4 @@
-import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard } from "lucide-react";
+import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard, Mail } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -24,6 +24,7 @@ const menuItems = [
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Subscription", url: "/subscription", icon: CreditCard },
   { title: "Account", url: "/settings", icon: Settings },
+  { title: "Contact", url: "/contact", icon: Mail },
 ];
 
 export function AppSidebar() {

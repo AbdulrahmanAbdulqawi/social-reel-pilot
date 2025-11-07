@@ -107,6 +107,13 @@ const Index = () => {
               <Button
                 variant="link"
                 className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => navigate("/contact")}
+              >
+                Contact Us
+              </Button>
+              <Button
+                variant="link"
+                className="text-sm text-muted-foreground hover:text-foreground"
                 onClick={() => navigate("/terms")}
               >
                 Terms of Service

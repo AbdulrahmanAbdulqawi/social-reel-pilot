@@ -13,6 +13,7 @@ import Upload from "./pages/Upload";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Subscription from "./pages/Subscription";
+import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
@@ -29,6 +30,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/admin" element={<Admin />} />
