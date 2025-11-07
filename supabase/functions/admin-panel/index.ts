@@ -54,26 +54,31 @@ Deno.serve(async (req) => {
       return jsonError('Unauthorized', 401);
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase clients
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    // Client for auth verification (uses user's token)
+    const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey, {
       global: {
         headers: { Authorization: authHeader }
       }
     });
 
     // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
     if (userError || !user) {
       return jsonError('Unauthorized', 401);
     }
 
     // Verify admin role
-    const isAdmin = await verifyAdmin(supabase, user.id);
+    const isAdmin = await verifyAdmin(supabaseAuth, user.id);
     if (!isAdmin) {
       return jsonError('Forbidden: Admin access required', 403);
     }
+
+    // Client for data access (bypasses RLS with service role)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const getlateApiKey = Deno.env.get('GETLATE_API_KEY');
     if (!getlateApiKey) {
