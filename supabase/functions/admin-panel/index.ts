@@ -303,6 +303,43 @@ Deno.serve(async (req) => {
           return jsonError('profileId and userId required', 400);
         }
 
+        // First, get and disconnect all accounts from this profile
+        try {
+          const accountsRes = await fetch(
+            `${GETLATE_API_URL}/accounts?profileId=${encodeURIComponent(profileId)}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${getlateApiKey}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (accountsRes.ok) {
+            const accountsData = await accountsRes.json();
+            const accounts = accountsData.accounts || [];
+
+            // Disconnect each account
+            for (const account of accounts) {
+              try {
+                await fetch(`${GETLATE_API_URL}/accounts/${account._id}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${getlateApiKey}`,
+                    'Content-Type': 'application/json',
+                  },
+                });
+                console.log(`Disconnected account ${account._id} from profile ${profileId}`);
+              } catch (err) {
+                console.error(`Failed to disconnect account ${account._id}:`, err);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error disconnecting accounts:', err);
+          // Continue with profile release even if account disconnect fails
+        }
+
         // Unlink profile from user
         const { error } = await supabase
           .from('profiles')
@@ -313,7 +350,7 @@ Deno.serve(async (req) => {
         if (error) throw error;
 
         await logAdminAction(supabase, user.id, 'release_profile', 'profile', profileId, { userId });
-        return jsonResponse({ success: true, message: 'Profile released successfully' });
+        return jsonResponse({ success: true, message: 'Profile released and accounts disconnected' });
       }
 
       case 'reassign-profile': {
