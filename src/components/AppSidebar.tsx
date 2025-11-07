@@ -29,7 +29,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state, setOpen } = useSidebar();
+  const { state, setOpenMobile, isMobile: sidebarIsMobile } = useSidebar();
   const navigate = useNavigate();
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
@@ -49,8 +49,8 @@ export function AppSidebar() {
   };
 
   const handleNavClick = () => {
-    if (isMobile) {
-      setOpen(false);
+    if (isMobile && sidebarIsMobile) {
+      setOpenMobile(false);
     }
   };
 
