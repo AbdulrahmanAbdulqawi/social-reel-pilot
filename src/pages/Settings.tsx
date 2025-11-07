@@ -1,6 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Instagram, Youtube, Facebook, Camera, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,11 +7,12 @@ import { useEffect, useState, useRef } from "react";
 import { ensureUserHasGetLateProfile } from "@/lib/getlateProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { PlatformCard } from "@/components/PlatformCard";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 
 interface GetLateAccount {
   _id: string;
@@ -442,115 +442,22 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {isInitializing ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-sm text-muted-foreground">Setting up GetLate integration...</p>
-            </div>
+            <LoadingSkeleton variant="list" count={4} />
           ) : (
-            platforms.map((platform, index) => {
-              const Icon = platform.icon;
-              return (
-                <div
-                  key={platform.name}
-                  className="p-3 sm:p-4 border rounded-lg hover:bg-accent/50 transition-colors animate-fade-in"
-                  style={{ animationDelay: `${0.2 + index * 0.05}s` }}
-                >
-                  {/* Mobile Layout: Stacked */}
-                  <div className="flex flex-col gap-3 sm:hidden">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Icon className={`w-5 h-5 ${platform.color} flex-shrink-0`} />
-                        <div>
-                          <p className="font-medium text-sm">{platform.name}</p>
-                          {platform.account && (
-                            <p className="text-xs text-muted-foreground">@{platform.account.username}</p>
-                          )}
-                        </div>
-                      </div>
-                      {platform.connected && (
-                        <span className="relative flex h-3 w-3 flex-shrink-0">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                      )}
-                    </div>
-                    
-                    {platform.account?.profilePicture && (
-                      <img 
-                        src={platform.account.profilePicture} 
-                        alt={platform.account.displayName}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-border self-start"
-                      />
-                    )}
-                    
-                    <Button
-                      variant={platform.connected ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => platform.connected ? handleDisconnect(platform.name) : handleConnect(platform.name)}
-                      disabled={loading || (!platform.connected && !profileId)}
-                      className="w-full"
-                    >
-                      {loading ? "Loading..." : platform.connected ? "Disconnect" : "Connect"}
-                    </Button>
-                  </div>
-
-                  {/* Desktop Layout: Horizontal */}
-                  <div className="hidden sm:flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Icon className={`w-6 h-6 ${platform.color} flex-shrink-0`} />
-                      <div className="flex items-center gap-3">
-                        {platform.account?.profilePicture && (
-                          <img 
-                            src={platform.account.profilePicture} 
-                            alt={platform.account.displayName}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-border"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{platform.name}</p>
-                          {platform.account && (
-                            <div className="text-sm text-muted-foreground">
-                              <p className="font-medium">{platform.account.displayName}</p>
-                              <p className="text-xs">@{platform.account.username}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {platform.connected ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <span className="relative flex h-3 w-3">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                            </span>
-                            <span className="text-sm text-muted-foreground">Connected</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDisconnect(platform.name)}
-                            disabled={loading}
-                          >
-                            Disconnect
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleConnect(platform.name)}
-                          disabled={loading || !profileId}
-                        >
-                          {loading ? "Loading..." : "Connect"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            platforms.map((platform) => (
+              <PlatformCard
+                key={platform.name}
+                name={platform.name}
+                icon={platform.icon}
+                color={platform.color}
+                connected={platform.connected}
+                account={platform.account}
+                loading={loading}
+                profileId={profileId}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+              />
+            ))
           )}
         </CardContent>
       </Card>

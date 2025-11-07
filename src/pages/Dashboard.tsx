@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReelCard } from "@/components/ReelCard";
 import { EditReelDialog } from "@/components/EditReelDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, Calendar, CheckCircle2 } from "lucide-react";
+import { Plus, TrendingUp, Calendar, CheckCircle2, Video } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { usePostStatusSync } from "@/hooks/usePostStatusSync";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { EmptyState } from "@/components/EmptyState";
 
 interface Reel {
   id: string;
@@ -108,8 +110,13 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="p-6 space-y-6">
+        <div className="space-y-4">
+          <div className="h-10 w-48 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-96 bg-muted animate-pulse rounded" />
+        </div>
+        <LoadingSkeleton variant="stats" count={3} />
+        <LoadingSkeleton variant="card" count={6} />
       </div>
     );
   }
@@ -183,19 +190,19 @@ const Dashboard = () => {
 
         <TabsContent value={activeTab} className="mt-6">
           {filteredReels.length === 0 ? (
-            <div className="text-center py-16 border-2 border-dashed rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 animate-fade-in">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-8 h-8 text-primary" />
-              </div>
-              <p className="text-lg font-medium mb-2">No posts found</p>
-              <p className="text-sm text-muted-foreground mb-6">Get started by creating your first post</p>
-              <Button
-                className="hover-scale"
-                onClick={() => navigate("/upload")}
-              >
-                Create Your First Post
-              </Button>
-            </div>
+            <EmptyState
+              icon={Video}
+              title={activeTab === "all" ? "No posts yet" : `No ${activeTab} posts`}
+              description={
+                activeTab === "all"
+                  ? "Start creating your first social media post and schedule it across platforms"
+                  : `You don't have any ${activeTab} posts at the moment`
+              }
+              action={{
+                label: "Create Your First Post",
+                onClick: () => navigate("/upload"),
+              }}
+            />
           ) : (
             <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {filteredReels.map((reel, index) => (

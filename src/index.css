@@ -24,6 +24,7 @@ All colors MUST be HSL.
     /* Lighter gold for accents */
     --primary-light: 51 100% 40%;
     --primary-glow: 51 100% 50%;
+    --primary-dark: 51 100% 20%;
 
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
@@ -39,6 +40,12 @@ All colors MUST be HSL.
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
@@ -46,13 +53,18 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
     
-    /* Custom gradients */
+    /* Enhanced Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(51 100% 27%), hsl(51 100% 40%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-primary-intense: linear-gradient(135deg, hsl(51 100% 27%), hsl(51 100% 50%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 5%));
+    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(0 0% 0% / 0.7) 100%);
+    --gradient-radial: radial-gradient(circle at 50% 50%, hsl(51 100% 27% / 0.15), transparent 70%);
     
-    /* Shadows */
-    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
-    --shadow-glow: 0 0 20px hsl(51 100% 50% / 0.3);
+    /* Enhanced Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.2), 0 4px 16px -4px hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 20px hsl(51 100% 50% / 0.3), 0 0 40px hsl(51 100% 50% / 0.1);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.3);
+    --shadow-focus: 0 0 0 3px hsl(51 100% 27% / 0.3);
 
     /* Sidebar colors */
     --sidebar-background: 0 0% 8%;
@@ -66,6 +78,8 @@ All colors MUST be HSL.
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -123,5 +137,67 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Focus visible styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/20;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Animation utilities */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-glow;
+  }
+  
+  /* Interactive link with underline animation */
+  .link-underline {
+    @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent;
+  }
+  
+  /* Glass effect */
+  .glass {
+    @apply bg-card/50 backdrop-blur-sm border border-border/50;
   }
 }
