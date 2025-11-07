@@ -2,6 +2,8 @@ import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard, M
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +36,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   useEffect(() => {
     checkIsAdmin().then(setIsAdmin);
@@ -69,7 +72,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.dashboard')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems
@@ -87,7 +90,7 @@ export function AppSidebar() {
                         }
                       >
                         <item.icon className="w-4 h-4" />
-                        {!collapsed && <span>{item.title}</span>}
+                        {!collapsed && <span>{t(`nav.${item.title.toLowerCase()}`)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -106,7 +109,7 @@ export function AppSidebar() {
                       }
                     >
                       <Shield className="w-4 h-4" />
-                      {!collapsed && <span>Admin Panel</span>}
+                      {!collapsed && <span>{t('nav.adminPanel')}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -118,10 +121,17 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <SidebarMenu>
+          {!collapsed && (
+            <SidebarMenuItem>
+              <div className="px-2 py-1">
+                <LanguageSwitcher />
+              </div>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive">
               <LogOut className="w-4 h-4" />
-              {!collapsed && <span>Sign Out</span>}
+              {!collapsed && <span>{t('nav.signOut')}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

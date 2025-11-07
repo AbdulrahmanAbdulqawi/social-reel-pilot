@@ -201,3 +201,46 @@ All colors MUST be HSL.
     @apply bg-card/50 backdrop-blur-sm border border-border/50;
   }
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="rtl"] .sidebar {
+  border-left: 1px solid hsl(var(--border));
+  border-right: none;
+}
+
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+[dir="rtl"] .mr-2,
+[dir="rtl"] .mr-4,
+[dir="rtl"] .mr-6 {
+  margin-right: 0;
+}
+
+[dir="rtl"] .ml-2 {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .ml-4 {
+  margin-right: 1rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .ml-6 {
+  margin-right: 1.5rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .gap-2 {
+  flex-direction: row-reverse;
+}
