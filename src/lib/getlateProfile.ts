@@ -144,21 +144,56 @@ export async function checkFreeProfileAvailability(): Promise<boolean> {
 }
 
 /**
- * Ensures the current user has a GetLate profile
- * Strategy: check if user has profile -> find free profile -> FAIL if none available
+ * Claims a GetLate profile for the current user with smart logic
+ * Returns: { success: boolean, profileId?: string, error?: string, message?: string }
+ */
+export async function claimGetLateProfile(): Promise<{
+  success: boolean;
+  profileId?: string;
+  error?: string;
+  message?: string;
+}> {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return { 
+        success: false, 
+        error: 'unauthorized',
+        message: 'User not authenticated' 
+      };
+    }
+
+    const { data, error } = await supabase.functions.invoke('getlate-connect', {
+      body: { 
+        action: 'claim-profile',
+        userId: user.id
+      }
+    });
+
+    if (error) {
+      console.error('Error claiming GetLate profile:', error);
+      return { 
+        success: false, 
+        error: 'api_error',
+        message: error.message || 'Failed to claim profile'
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error claiming GetLate profile:', error);
+    return { 
+      success: false, 
+      error: 'unknown_error',
+      message: 'An unexpected error occurred'
+    };
+  }
+}
+
+/**
+ * Ensures the current user has a GetLate profile (deprecated, use claimGetLateProfile instead)
  */
 export async function ensureUserHasGetLateProfile(): Promise<string | null> {
-  // 1) Return if already linked
-  let profileId = await getUserGetLateProfileId();
-  if (profileId) return profileId;
-
-  // 2) Try to find a free profile first
-  const freeProfileId = await findFreeGetLateProfile();
-  if (freeProfileId) {
-    const linked = await linkGetLateProfileToUser(freeProfileId);
-    return linked ? freeProfileId : null;
-  }
-
-  // 3) No free profiles available - DO NOT create new one
-  return null;
+  const result = await claimGetLateProfile();
+  return result.success ? result.profileId || null : null;
 }

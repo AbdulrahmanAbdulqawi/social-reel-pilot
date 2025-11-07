@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video } from "lucide-react";
+import { Video, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { checkFreeProfileAvailability } from "@/lib/getlateProfile";
+import { claimGetLateProfile } from "@/lib/getlateProfile";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address").max(255, "Email too long"),
@@ -39,6 +39,7 @@ const Auth = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
+  const [profileClaimError, setProfileClaimError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -68,20 +69,12 @@ const Auth = () => {
 
     setLoading(true);
     setIsRegistering(true);
+    setProfileClaimError(null);
     
     try {
-      // Step 1: Check if free profile is available BEFORE creating account
-      const isAvailable = await checkFreeProfileAvailability();
-      if (!isAvailable) {
-        toast.error('Registration is currently unavailable. No free profiles available.');
-        setLoading(false);
-        setIsRegistering(false);
-        return;
-      }
-
       const redirectUrl = `${window.location.origin}/dashboard`;
       
-      // Step 2: Sign up the user
+      // Step 1: Sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -98,25 +91,68 @@ const Auth = () => {
       if (!authData.user) {
         throw new Error('Failed to create user account');
       }
-      // If email confirmation is required, there will be no session yet.
-      // Immediately show the verification screen and stop here.
+
+      // If email confirmation is required, show verification screen
       if (!authData.session) {
         toast.success("Account created! Please check your email to verify your account.");
         setVerificationEmailSent(true);
         setVerificationEmail(email);
         setIsRegistering(false);
+        setLoading(false);
         return;
       }
 
-      // If a session exists (auto-confirm environments), navigate to dashboard
-      toast.success("Account created!");
+      // Step 2: Wait for profile to be created by trigger
+      let profileExists = false;
+      let retries = 0;
+      const maxRetries = 10;
+      
+      while (!profileExists && retries < maxRetries) {
+        const { data: profileCheck } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', authData.user.id)
+          .maybeSingle();
+        
+        if (profileCheck) {
+          profileExists = true;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          retries++;
+        }
+      }
+
+      if (!profileExists) {
+        await supabase.auth.signOut();
+        throw new Error('Profile creation timed out. Please try again.');
+      }
+
+      // Step 3: Claim a GetLate profile
+      const claimResult = await claimGetLateProfile();
+
+      if (!claimResult.success) {
+        if (claimResult.error === 'no_access') {
+          // Show dedicated error screen
+          setProfileClaimError(claimResult.message || "You don't have access to claim a new profile. Please contact customer support for help.");
+          await supabase.auth.signOut();
+          setIsRegistering(false);
+          setLoading(false);
+          return;
+        } else {
+          // Generic error
+          await supabase.auth.signOut();
+          throw new Error(claimResult.message || 'Failed to set up your profile. Please try again.');
+        }
+      }
+
+      toast.success("Account created successfully!");
       setIsRegistering(false);
+      setLoading(false);
       navigate("/dashboard");
     } catch (error: any) {
       console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
       setIsRegistering(false);
-    } finally {
       setLoading(false);
     }
   };
@@ -159,6 +195,49 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show profile claim error screen
+  if (profileClaimError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4">
+        <Card className="w-full max-w-md shadow-glow">
+          <CardHeader className="space-y-4 text-center pb-2">
+            <div className="mx-auto bg-destructive/10 w-16 h-16 rounded-full flex items-center justify-center">
+              <Video className="h-8 w-8 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold">Access Restricted</CardTitle>
+              <CardDescription className="text-base">
+                {profileClaimError}
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <Button 
+              onClick={() => window.open('mailto:support@socialreelpilot.com', '_blank')}
+              className="w-full"
+              size="lg"
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Contact Support
+            </Button>
+            <Button 
+              onClick={() => {
+                setProfileClaimError(null);
+                setEmail("");
+                setPassword("");
+                setUsername("");
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Back to Sign Up
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (verificationEmailSent) {
     return (

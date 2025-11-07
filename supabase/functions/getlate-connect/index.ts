@@ -7,6 +7,9 @@ const corsHeaders = {
 
 const GETLATE_API_URL = 'https://getlate.dev/api/v1';
 
+// Import Supabase client
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+
 // --- Main Handler ---
 Deno.serve(async (req) => {
   // Handle preflight
@@ -35,9 +38,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { action, platform, profileId } = body || {};
+    const { action, platform, profileId, userId } = body || {};
 
-    console.log('GetLate Request:', { method: req.method, action, platform, profileId });
+    console.log('GetLate Request:', { method: req.method, action, platform, profileId, userId });
 
     // --- Actions ---
     switch (action) {
@@ -201,6 +204,183 @@ Deno.serve(async (req) => {
         }
 
         return jsonResponse({ success: true, message: 'Account disconnected successfully' });
+      }
+
+      /**
+       * 6️⃣ Get usage stats
+       */
+      case 'get-usage-stats': {
+        const res = await fetch(`${GETLATE_API_URL}/usage-stats`, {
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to get usage stats: ${res.status} ${res.statusText} - ${errText}`);
+        }
+
+        const data = await res.json();
+        return jsonResponse(data);
+      }
+
+      /**
+       * 7️⃣ Claim a profile for a user (with smart logic)
+       */
+      case 'claim-profile': {
+        if (!userId) {
+          throw new Error('"userId" is required to claim a profile');
+        }
+
+        // Initialize Supabase client
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Step 1: Check if user already has a profile linked
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('getlate_profile_id')
+          .eq('id', userId)
+          .single();
+
+        if (existingProfile?.getlate_profile_id) {
+          return jsonResponse({ 
+            success: true, 
+            profileId: existingProfile.getlate_profile_id,
+            message: 'Profile already linked'
+          });
+        }
+
+        // Step 2: Get all GetLate profiles
+        const profilesRes = await fetch(`${GETLATE_API_URL}/profiles`, {
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!profilesRes.ok) {
+          throw new Error('Failed to fetch GetLate profiles');
+        }
+
+        const profilesData = await profilesRes.json();
+        const allProfiles = profilesData.profiles || [];
+
+        // Step 3: Get all linked profile IDs from Supabase
+        const { data: linkedProfiles } = await supabase
+          .from('profiles')
+          .select('getlate_profile_id')
+          .not('getlate_profile_id', 'is', null);
+
+        const linkedIds = new Set(linkedProfiles?.map(p => p.getlate_profile_id) || []);
+
+        // Step 4: Find a free profile
+        const freeProfile = allProfiles.find((profile: any) => !linkedIds.has(profile._id));
+
+        if (freeProfile) {
+          // Try to link it (with race condition check)
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ getlate_profile_id: freeProfile._id })
+            .eq('id', userId)
+            .is('getlate_profile_id', null); // Only update if still null
+
+          if (updateError) {
+            console.error('Failed to link free profile:', updateError);
+            throw new Error('Failed to link profile. Please try again.');
+          }
+
+          // Verify the update succeeded
+          const { data: verifyProfile } = await supabase
+            .from('profiles')
+            .select('getlate_profile_id')
+            .eq('id', userId)
+            .single();
+
+          if (verifyProfile?.getlate_profile_id === freeProfile._id) {
+            return jsonResponse({ 
+              success: true, 
+              profileId: freeProfile._id,
+              message: 'Free profile claimed successfully'
+            });
+          } else {
+            // Race condition occurred, retry
+            throw new Error('Profile was claimed by another user. Please try again.');
+          }
+        }
+
+        // Step 5: No free profiles, check if we can create a new one
+        const usageRes = await fetch(`${GETLATE_API_URL}/usage-stats`, {
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!usageRes.ok) {
+          throw new Error('Failed to check usage stats');
+        }
+
+        const usageData = await usageRes.json();
+        const canCreate = usageData.canCreateProfile || 
+                         (usageData.usage?.profiles < usageData.limits?.profiles);
+
+        if (!canCreate) {
+          return jsonResponse({ 
+            success: false, 
+            error: 'no_access',
+            message: "You don't have access to claim a new profile. Please contact customer support for help."
+          }, 403);
+        }
+
+        // Step 6: Create a new profile
+        const createPayload = {
+          name: 'Social Reel Pilot',
+          description: 'Automated social media posting',
+          color: '#4ade80',
+        };
+
+        const createRes = await fetch(`${GETLATE_API_URL}/profiles`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getlateApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(createPayload),
+        });
+
+        if (!createRes.ok) {
+          const errText = await createRes.text();
+          throw new Error(`Failed to create profile: ${createRes.status} - ${errText}`);
+        }
+
+        const newProfileData = await createRes.json();
+        const newProfileId = newProfileData._id || newProfileData.profile?._id;
+
+        if (!newProfileId) {
+          throw new Error('Created profile but no ID returned');
+        }
+
+        // Step 7: Link the new profile to the user
+        const { error: linkError } = await supabase
+          .from('profiles')
+          .update({ getlate_profile_id: newProfileId })
+          .eq('id', userId)
+          .is('getlate_profile_id', null);
+
+        if (linkError) {
+          console.error('Failed to link new profile:', linkError);
+          throw new Error('Failed to link newly created profile');
+        }
+
+        return jsonResponse({ 
+          success: true, 
+          profileId: newProfileId,
+          message: 'New profile created and linked successfully'
+        });
       }
 
       /**
