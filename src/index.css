@@ -8,14 +8,14 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
     /* Gold primary color */
     --primary: 51 100% 27%;
@@ -25,11 +25,11 @@ All colors MUST be HSL.
     --primary-light: 51 100% 40%;
     --primary-glow: 51 100% 50%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
     --accent: 51 100% 27%;
     --accent-foreground: 0 0% 100%;
@@ -40,8 +40,8 @@ All colors MUST be HSL.
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
     --ring: 51 100% 27%;
 
     --radius: 0.5rem;
@@ -55,14 +55,14 @@ All colors MUST be HSL.
     --shadow-glow: 0 0 20px hsl(51 100% 50% / 0.3);
 
     /* Sidebar colors */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 51 100% 27%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 51 100% 95%;
-    --sidebar-accent-foreground: 51 100% 27%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 51 100% 27%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 51 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 51 100% 50%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 51 100% 50%;
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
