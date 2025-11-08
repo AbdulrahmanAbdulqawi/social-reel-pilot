@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { RTLWrapper } from "@/components/RTLWrapper";
+import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -47,6 +48,7 @@ const App = () => (
                     <RTLWrapper>
                       <AppSidebar />
                       <main className="flex-1 w-full overflow-auto">
+                        <MobileSidebarTrigger />
                         <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl">
                           <ErrorBoundary>
                             <Routes>
