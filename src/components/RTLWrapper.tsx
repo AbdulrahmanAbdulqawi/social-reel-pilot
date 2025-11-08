@@ -22,10 +22,7 @@ export function RTLWrapper({ children }: RTLWrapperProps) {
   }, [i18n]);
 
   return (
-    <div 
-      className="flex min-h-screen w-full"
-      style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}
-    >
+    <div className="flex min-h-screen w-full">
       {children}
     </div>
   );
