@@ -43,22 +43,24 @@ const App = () => (
               path="/*"
               element={
                 <ProtectedRoute>
-                  <SidebarProvider>
+                  <SidebarProvider defaultOpen={false}>
                     <RTLWrapper>
                       <AppSidebar />
-                      <main className="flex-1 overflow-auto">
-                        <ErrorBoundary>
-                          <Routes>
-                            <Route path="/onboarding" element={<Onboarding />} />
-                            <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/upload" element={<Upload />} />
-                            <Route path="/analytics" element={<Analytics />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/subscription" element={<Subscription />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </ErrorBoundary>
+                      <main className="flex-1 w-full overflow-auto">
+                        <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl">
+                          <ErrorBoundary>
+                            <Routes>
+                              <Route path="/onboarding" element={<Onboarding />} />
+                              <Route path="/dashboard" element={<Dashboard />} />
+                              <Route path="/upload" element={<Upload />} />
+                              <Route path="/analytics" element={<Analytics />} />
+                              <Route path="/settings" element={<Settings />} />
+                              <Route path="/subscription" element={<Subscription />} />
+                              <Route path="/contact" element={<Contact />} />
+                              <Route path="*" element={<NotFound />} />
+                            </Routes>
+                          </ErrorBoundary>
+                        </div>
                       </main>
                     </RTLWrapper>
                   </SidebarProvider>

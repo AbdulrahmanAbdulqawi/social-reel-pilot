@@ -60,28 +60,32 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side={isRTL ? "right" : "left"}>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between w-full`}>
-          <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
-            <div className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0">
-              <Video className="w-5 h-5 text-primary-foreground" />
+    <Sidebar 
+      collapsible="icon" 
+      side={isRTL ? "right" : "left"}
+      className="border-r"
+    >
+      <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
+        <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between w-full`}>
+          <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
+            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0">
+              <Video className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
             {!collapsed && (
-              <span className="font-bold text-lg text-sidebar-foreground truncate">ReelHub</span>
+              <span className="font-bold text-base sm:text-lg text-sidebar-foreground truncate">ReelHub</span>
             )}
           </div>
-          <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0" />
+          <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-8 w-8 sm:h-9 sm:w-9" />
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-1 sm:px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+          <SidebarGroupLabel className="px-2 sm:px-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             {t('nav.dashboard')}
           </SidebarGroupLabel>
-          <SidebarGroupContent className="mt-2">
-            <SidebarMenu className="space-y-1">
+          <SidebarGroupContent className="mt-1 sm:mt-2">
+            <SidebarMenu className="space-y-0.5 sm:space-y-1">
               {menuItems
                 .filter(item => !(isAdmin && item.hideForAdmin))
                 .map((item) => (
@@ -91,7 +95,7 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2 rounded-lg transition-all duration-200 ${
+                          `flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 ${
                             isActive
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -99,7 +103,7 @@ export function AppSidebar() {
                         }
                       >
                         <item.icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span className="truncate">{t(`nav.${item.title.toLowerCase()}`)}</span>}
+                        {!collapsed && <span className="truncate text-sm sm:text-base">{t(`nav.${item.title.toLowerCase()}`)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -112,7 +116,7 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2 rounded-lg transition-all duration-200 ${
+                        `flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 ${
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -120,7 +124,7 @@ export function AppSidebar() {
                       }
                     >
                       <Shield className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span className="truncate">{t('nav.adminPanel')}</span>}
+                      {!collapsed && <span className="truncate text-sm sm:text-base">{t('nav.adminPanel')}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -130,11 +134,11 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 mt-auto">
-        <SidebarMenu className="space-y-1">
+      <SidebarFooter className="border-t border-sidebar-border p-2 sm:p-3 mt-auto">
+        <SidebarMenu className="space-y-0.5 sm:space-y-1">
           {!collapsed && (
             <SidebarMenuItem>
-              <div className="px-2 py-2">
+              <div className="px-1 sm:px-2 py-1 sm:py-2">
                 <LanguageSwitcher />
               </div>
             </SidebarMenuItem>
@@ -142,7 +146,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleSignOut} 
-              className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium`}
+              className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm sm:text-base`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
               {!collapsed && <span className="truncate">{t('nav.signOut')}</span>}

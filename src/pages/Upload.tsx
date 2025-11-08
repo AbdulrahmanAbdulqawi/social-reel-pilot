@@ -291,7 +291,7 @@ const Upload = () => {
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <Card>
         <CardHeader className="space-y-1 px-4 sm:px-6">
           <CardTitle className="text-xl sm:text-2xl">{t('upload.title')}</CardTitle>
