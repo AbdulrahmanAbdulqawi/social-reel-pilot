@@ -62,24 +62,26 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" side={isRTL ? "right" : "left"}>
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-sidebar-primary rounded-lg">
-              <Video className="w-5 h-5 text-sidebar-primary-foreground" />
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm">
+              <Video className="w-5 h-5 text-primary-foreground" />
             </div>
             {!collapsed && (
-              <span className="font-bold text-lg text-sidebar-foreground">ReelHub</span>
+              <span className="font-bold text-lg text-sidebar-foreground truncate">ReelHub</span>
             )}
           </div>
-          <SidebarTrigger className="-mr-2" />
+          <SidebarTrigger className="ml-2 hover:bg-sidebar-accent/50 rounded-md transition-colors" />
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.dashboard')}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+          <SidebarGroupLabel className="px-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+            {t('nav.dashboard')}
+          </SidebarGroupLabel>
+          <SidebarGroupContent className="mt-2">
+            <SidebarMenu className="space-y-1">
               {menuItems
                 .filter(item => !(isAdmin && item.hideForAdmin))
                 .map((item) => (
@@ -89,13 +91,15 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          isActive
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                            : "hover:bg-sidebar-accent/50"
+                          `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          }`
                         }
                       >
-                        <item.icon className="w-4 h-4" />
-                        {!collapsed && <span>{t(`nav.${item.title.toLowerCase()}`)}</span>}
+                        <item.icon className="w-4 h-4 shrink-0" />
+                        {!collapsed && <span className="truncate">{t(`nav.${item.title.toLowerCase()}`)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -108,13 +112,15 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        }`
                       }
                     >
-                      <Shield className="w-4 h-4" />
-                      {!collapsed && <span>{t('nav.adminPanel')}</span>}
+                      <Shield className="w-4 h-4 shrink-0" />
+                      {!collapsed && <span className="truncate">{t('nav.adminPanel')}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -124,19 +130,22 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
-        <SidebarMenu>
+      <SidebarFooter className="border-t border-sidebar-border p-3 mt-auto">
+        <SidebarMenu className="space-y-1">
           {!collapsed && (
             <SidebarMenuItem>
-              <div className="px-2 py-1">
+              <div className="px-2 py-2">
                 <LanguageSwitcher />
               </div>
             </SidebarMenuItem>
           )}
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive">
-              <LogOut className="w-4 h-4" />
-              {!collapsed && <span>{t('nav.signOut')}</span>}
+            <SidebarMenuButton 
+              onClick={handleSignOut} 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {!collapsed && <span className="truncate">{t('nav.signOut')}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

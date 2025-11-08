@@ -67,13 +67,13 @@ All colors MUST be HSL.
     --shadow-focus: 0 0 0 3px hsl(51 100% 27% / 0.3);
 
     /* Sidebar colors */
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 51 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-border: 0 0% 15%;
     --sidebar-ring: 51 100% 50%;
 
     /* Transitions */
@@ -119,13 +119,13 @@ All colors MUST be HSL.
     --shadow-card: 0 2px 8px -2px hsl(51 100% 50% / 0.2);
     --shadow-glow: 0 0 20px hsl(51 100% 60% / 0.4);
     
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 51 100% 50%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-border: 0 0% 15%;
     --sidebar-ring: 51 100% 50%;
   }
 }
