@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +37,8 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
   const isMobile = useIsMobile();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   useEffect(() => {
     checkIsAdmin().then(setIsAdmin);
@@ -58,15 +60,18 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" side={isRTL ? "right" : "left"}>
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-sidebar-primary rounded-lg">
-            <Video className="w-5 h-5 text-sidebar-primary-foreground" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-sidebar-primary rounded-lg">
+              <Video className="w-5 h-5 text-sidebar-primary-foreground" />
+            </div>
+            {!collapsed && (
+              <span className="font-bold text-lg text-sidebar-foreground">ReelHub</span>
+            )}
           </div>
-          {!collapsed && (
-            <span className="font-bold text-lg text-sidebar-foreground">ReelHub</span>
-          )}
+          <SidebarTrigger className="-mr-2" />
         </div>
       </SidebarHeader>
 
