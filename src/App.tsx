@@ -44,7 +44,7 @@ const App = () => (
               path="/*"
               element={
                 <ProtectedRoute>
-                  <SidebarProvider defaultOpen={false}>
+                  <SidebarProvider defaultOpen={true}>
                     <RTLWrapper>
                       <AppSidebar />
                       <main className="flex-1 w-full overflow-auto">

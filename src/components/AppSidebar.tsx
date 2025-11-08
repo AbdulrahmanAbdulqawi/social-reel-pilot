@@ -32,7 +32,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state, setOpenMobile, isMobile: sidebarIsMobile } = useSidebar();
+  const { state, setOpenMobile, isMobile: sidebarIsMobile, toggleSidebar } = useSidebar();
   const navigate = useNavigate();
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
@@ -68,14 +68,21 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
         <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between w-full`}>
           <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0">
+            <button
+              type="button"
+              onClick={() => collapsed && toggleSidebar()}
+              aria-label="Open sidebar"
+              className="p-1.5 sm:p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-sidebar-ring hover:opacity-90 transition-opacity"
+            >
               <Video className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
-            </div>
+            </button>
             {!collapsed && (
               <span className="font-bold text-base sm:text-lg text-sidebar-foreground truncate">ReelHub</span>
             )}
           </div>
-          <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-8 w-8 sm:h-9 sm:w-9" />
+          {!collapsed && (
+            <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-8 w-8 sm:h-9 sm:w-9" />
+          )}
         </div>
       </SidebarHeader>
 
