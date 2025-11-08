@@ -66,22 +66,22 @@ export function AppSidebar() {
       className="border-r"
     >
       <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
-        <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between w-full`}>
-          <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
+        <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} ${collapsed ? 'justify-center' : 'justify-between'} w-full`}>
+          <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 ${collapsed ? '' : 'flex-1'}`}>
             <button
               type="button"
               onClick={() => collapsed && toggleSidebar()}
               aria-label="Open sidebar"
-              className="p-1.5 sm:p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-sidebar-ring hover:opacity-90 transition-opacity"
+              className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-sidebar-ring hover:opacity-90 transition-opacity"
             >
-              <Video className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+              <Video className="w-5 h-5 text-primary-foreground" />
             </button>
             {!collapsed && (
-              <span className="font-bold text-base sm:text-lg text-sidebar-foreground truncate">ReelHub</span>
+              <span className="font-bold text-lg text-sidebar-foreground truncate">ReelHub</span>
             )}
           </div>
           {!collapsed && (
-            <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-8 w-8 sm:h-9 sm:w-9" />
+            <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-9 w-9" />
           )}
         </div>
       </SidebarHeader>
@@ -102,15 +102,15 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          `flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 ${
+                          `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                             isActive
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                           }`
                         }
                       >
-                        <item.icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span className="truncate text-sm sm:text-base">{t(`nav.${item.title.toLowerCase()}`)}</span>}
+                        <item.icon className="w-5 h-5 shrink-0" />
+                        {!collapsed && <span className="truncate">{t(`nav.${item.title.toLowerCase()}`)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -123,15 +123,15 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 ${
+                        `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                         }`
                       }
                     >
-                      <Shield className="w-4 h-4 shrink-0" />
-                      {!collapsed && <span className="truncate text-sm sm:text-base">{t('nav.adminPanel')}</span>}
+                      <Shield className="w-5 h-5 shrink-0" />
+                      {!collapsed && <span className="truncate">{t('nav.adminPanel')}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -153,9 +153,9 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleSignOut} 
-              className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm sm:text-base`}
+              className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
             >
-              <LogOut className="w-4 h-4 shrink-0" />
+              <LogOut className="w-5 h-5 shrink-0" />
               {!collapsed && <span className="truncate">{t('nav.signOut')}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
