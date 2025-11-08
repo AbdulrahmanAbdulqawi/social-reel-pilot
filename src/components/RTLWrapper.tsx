@@ -10,14 +10,19 @@ export function RTLWrapper({ children }: RTLWrapperProps) {
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar');
 
   useEffect(() => {
-    const handleLanguageChange = () => {
+    const applyDir = () => {
       const isArabic = i18n.language === 'ar';
       setIsRTL(isArabic);
+      // Set document direction attribute for robust RTL support
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('dir', isArabic ? 'rtl' : 'ltr');
+      }
     };
 
-    i18n.on('languageChanged', handleLanguageChange);
+    applyDir();
+    i18n.on('languageChanged', applyDir);
     return () => {
-      i18n.off('languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', applyDir);
     };
   }, [i18n]);
 

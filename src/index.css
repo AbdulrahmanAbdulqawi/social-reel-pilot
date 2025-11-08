@@ -283,12 +283,5 @@ All colors MUST be HSL.
   margin-left: 0;
 }
 
-/* RTL Flex direction */
-[dir="rtl"] .gap-2 {
-  flex-direction: row-reverse;
-}
-
-/* RTL Icons and buttons */
-[dir="rtl"] .flex.items-center.gap-2 {
-  flex-direction: row-reverse;
-}
+/* Removed generic RTL flex-direction overrides to avoid unintended layout issues. 
+   Use component-level classes (e.g., flex-row-reverse) where needed. */
