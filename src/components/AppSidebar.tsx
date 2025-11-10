@@ -1,4 +1,4 @@
-import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard, Mail } from "lucide-react";
+import { Home, Upload, BarChart3, Settings, Video, LogOut, Shield, CreditCard, Mail, Calendar } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,6 +25,7 @@ import { checkIsAdmin } from "@/lib/adminHelper";
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, hideForAdmin: true },
   { title: "Upload", url: "/upload", icon: Upload, hideForAdmin: true },
+  { title: "Calendar", url: "/calendar", icon: Calendar, hideForAdmin: true },
   { title: "Analytics", url: "/analytics", icon: BarChart3, hideForAdmin: false },
   { title: "Subscription", url: "/subscription", icon: CreditCard, hideForAdmin: true },
   { title: "Account", url: "/settings", icon: Settings, hideForAdmin: false },

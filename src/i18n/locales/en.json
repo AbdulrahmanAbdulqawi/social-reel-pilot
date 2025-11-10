@@ -36,6 +36,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "upload": "Upload",
+    "calendar": "Calendar",
     "analytics": "Analytics",
     "settings": "Account",
     "subscription": "Subscription",
@@ -290,6 +291,22 @@
     "noData": "No data available",
     "noResults": "No results found",
     "tryAdjusting": "Try adjusting your filters"
+  },
+  "calendar": {
+    "title": "Content Calendar",
+    "subtitle": "Plan and schedule your posts across all platforms",
+    "filters": "Filters",
+    "filterDesc": "Filter posts by platform and status",
+    "filterByPlatform": "Filter by Platform",
+    "filterByStatus": "Filter by Status",
+    "allPlatforms": "All Platforms",
+    "allStatuses": "All Statuses",
+    "today": "Today",
+    "month": "Month",
+    "untitled": "Untitled Post",
+    "clickToEdit": "Click event to view details (editing coming soon)",
+    "loadFailed": "Failed to load calendar events",
+    "failed": "Failed"
   },
   "contact": {
     "title": "Get in Touch",

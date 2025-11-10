@@ -36,6 +36,7 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "upload": "رفع",
+    "calendar": "التقويم",
     "analytics": "التحليلات",
     "settings": "إعدادات الحساب",
     "subscription": "الاشتراك",
@@ -291,6 +292,22 @@
     "noData": "لا توجد بيانات متاحة",
     "noResults": "لم يتم العثور على نتائج",
     "tryAdjusting": "حاول تعديل الفلاتر"
+  },
+  "calendar": {
+    "title": "تقويم المحتوى",
+    "subtitle": "خطط وجدول منشوراتك عبر جميع المنصات",
+    "filters": "الفلاتر",
+    "filterDesc": "تصفية المنشورات حسب المنصة والحالة",
+    "filterByPlatform": "تصفية حسب المنصة",
+    "filterByStatus": "تصفية حسب الحالة",
+    "allPlatforms": "جميع المنصات",
+    "allStatuses": "جميع الحالات",
+    "today": "اليوم",
+    "month": "الشهر",
+    "untitled": "منشور بدون عنوان",
+    "clickToEdit": "انقر على الحدث لعرض التفاصيل (التعديل قريباً)",
+    "loadFailed": "فشل تحميل أحداث التقويم",
+    "failed": "فشل"
   },
   "contact": {
     "title": "تواصل معنا",

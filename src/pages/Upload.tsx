@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ type MediaFile = {
 
 const Upload = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -48,6 +49,14 @@ const Upload = () => {
   const [accounts, setAccounts] = useState<GetLateAccount[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [profileId, setProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pre-fill date from URL query parameter (from calendar)
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      setScheduledDate(dateParam);
+    }
+  }, [searchParams]);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   useEffect(() => {

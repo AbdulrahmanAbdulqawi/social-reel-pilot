@@ -22,6 +22,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
+import Calendar from "./pages/Calendar";
+import "./pages/Calendar.css";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +57,7 @@ const App = () => (
                               <Route path="/onboarding" element={<Onboarding />} />
                               <Route path="/dashboard" element={<Dashboard />} />
                               <Route path="/upload" element={<Upload />} />
+                              <Route path="/calendar" element={<Calendar />} />
                               <Route path="/analytics" element={<Analytics />} />
                               <Route path="/settings" element={<Settings />} />
                               <Route path="/subscription" element={<Subscription />} />
