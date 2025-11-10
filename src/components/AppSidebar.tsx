@@ -66,31 +66,42 @@ export function AppSidebar() {
       className="border-r"
     >
       <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
-        <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} ${collapsed ? 'justify-center' : 'justify-between'} w-full`}>
-          <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 ${collapsed ? '' : 'flex-1'}`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center' : `gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between`} w-full`}>
+          {collapsed ? (
             <button
               type="button"
-              onClick={() => collapsed && toggleSidebar()}
+              onClick={toggleSidebar}
               aria-label="Open sidebar"
-              className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-sidebar-ring hover:opacity-90 transition-opacity"
+              className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-primary hover:opacity-90 transition-opacity"
             >
               <Video className="w-5 h-5 text-primary-foreground" />
             </button>
-            {!collapsed && (
-              <span className="font-bold text-lg text-sidebar-foreground truncate">ReelHub</span>
-            )}
-          </div>
-          {!collapsed && (
-            <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-9 w-9" />
+          ) : (
+            <>
+              <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label="Collapse sidebar"
+                  className="p-2 bg-gradient-to-br from-primary to-primary-light rounded-lg shadow-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-primary hover:opacity-90 transition-opacity"
+                >
+                  <Video className="w-5 h-5 text-primary-foreground" />
+                </button>
+                <span className="font-bold text-lg text-sidebar-foreground truncate">ReelHub</span>
+              </div>
+              <SidebarTrigger className="hover:bg-sidebar-accent/50 rounded-md transition-colors shrink-0 h-9 w-9" />
+            </>
           )}
         </div>
       </SidebarHeader>
 
       <SidebarContent className="px-1 sm:px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-2 sm:px-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-            {t('nav.dashboard')}
-          </SidebarGroupLabel>
+          {!collapsed && (
+            <SidebarGroupLabel className="px-2 sm:px-3 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              {t('nav.dashboard')}
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent className="mt-1 sm:mt-2">
             <SidebarMenu className="space-y-0.5 sm:space-y-1">
               {menuItems
@@ -102,12 +113,13 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                          `flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                             isActive
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                           }`
                         }
+                        title={collapsed ? t(`nav.${item.title.toLowerCase()}`) : undefined}
                       >
                         <item.icon className="w-5 h-5 shrink-0" />
                         {!collapsed && <span className="truncate">{t(`nav.${item.title.toLowerCase()}`)}</span>}
@@ -123,12 +135,13 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                        `flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                         }`
                       }
+                      title={collapsed ? t('nav.adminPanel') : undefined}
                     >
                       <Shield className="w-5 h-5 shrink-0" />
                       {!collapsed && <span className="truncate">{t('nav.adminPanel')}</span>}
@@ -153,7 +166,8 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleSignOut} 
-              className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3 py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
+              className={`flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
+              title={collapsed ? t('nav.signOut') : undefined}
             >
               <LogOut className="w-5 h-5 shrink-0" />
               {!collapsed && <span className="truncate">{t('nav.signOut')}</span>}
