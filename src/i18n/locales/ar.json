@@ -188,7 +188,34 @@
     "profileNotInit": "لم يتم تهيئة الملف الشخصي",
     "connectFailed": "فشل ربط المنصة",
     "notifications": "إشعارات البريد الإلكتروني",
-    "notificationsDesc": "إدارة تفضيلات إشعارات البريد الإلكتروني"
+    "notificationsDesc": "إدارة تفضيلات إشعارات البريد الإلكتروني",
+    "notificationCategories": {
+      "authentication": "المصادقة",
+      "postStatus": "حالة المنشور",
+      "accountUpdates": "تحديثات الحساب",
+      "performanceAnalytics": "الأداء والتحليلات"
+    },
+    "notificationTypes": {
+      "welcomeEmail": "رسالة الترحيب",
+      "loginNewDevice": "تسجيل الدخول من جهاز جديد",
+      "postPublished": "نشر المنشور بنجاح",
+      "postFailed": "فشل نشر المنشور",
+      "scheduledReminder": "تذكير بالمنشور المجدول (قبل 24 ساعة)",
+      "analyticsMilestone": "معالم التحليلات (1 ألف، 10 آلاف مشاهدة)",
+      "subscriptionRenewal": "تذكير بتجديد الاشتراك",
+      "paymentFailed": "فشل الدفع",
+      "usageLimitWarning": "اقتراب من حد الاستخدام",
+      "platformDisconnected": "فصل المنصة",
+      "weeklySummary": "ملخص تحليلات أسبوعي",
+      "monthlyReport": "تقرير الأداء الشهري",
+      "topPostNotification": "تنبيهات المنشورات الأفضل أداءً"
+    },
+    "notificationMessages": {
+      "loadingPreferences": "جاري تحميل التفضيلات...",
+      "preferencesUpdated": "تم تحديث تفضيلات الإشعارات",
+      "updateFailed": "فشل تحديث التفضيلات",
+      "loadFailed": "فشل تحميل تفضيلات الإشعارات"
+    }
   },
   "subscription": {
     "title": "الاشتراك",

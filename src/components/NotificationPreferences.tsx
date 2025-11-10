@@ -73,7 +73,7 @@ export function NotificationPreferences() {
       }
     } catch (error) {
       console.error("Error loading notification preferences:", error);
-      toast.error("Failed to load notification preferences");
+      toast.error(t('settings.notificationMessages.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -96,10 +96,10 @@ export function NotificationPreferences() {
         .eq("user_id", user.id);
 
       if (error) throw error;
-      toast.success("Notification preferences updated");
+      toast.success(t('settings.notificationMessages.preferencesUpdated'));
     } catch (error) {
       console.error("Error updating preferences:", error);
-      toast.error("Failed to update preferences");
+      toast.error(t('settings.notificationMessages.updateFailed'));
       // Revert on error
       setPrefs({ ...prefs, [key]: !value });
     } finally {
@@ -110,13 +110,13 @@ export function NotificationPreferences() {
   if (loading || !prefs) {
     return (
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary" />
-            <CardTitle>Email Notifications</CardTitle>
-          </div>
-          <CardDescription>Loading preferences...</CardDescription>
-        </CardHeader>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Bell className="w-5 h-5 text-primary" />
+          <CardTitle>{t('settings.notifications')}</CardTitle>
+        </div>
+        <CardDescription>{t('settings.notificationMessages.loadingPreferences')}</CardDescription>
+      </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -147,12 +147,12 @@ export function NotificationPreferences() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="w-4 h-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Authentication</h4>
+            <h4 className="text-sm font-semibold">{t('settings.notificationCategories.authentication')}</h4>
           </div>
-          <div className="space-y-3 pl-6">
+          <div className="space-y-3 ps-6">
             <div className="flex items-center justify-between">
               <Label htmlFor="welcome_email" className="cursor-pointer">
-                Welcome email
+                {t('settings.notificationTypes.welcomeEmail')}
               </Label>
               <Switch
                 id="welcome_email"
@@ -163,7 +163,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="login_new_device" className="cursor-pointer">
-                Login from new device
+                {t('settings.notificationTypes.loginNewDevice')}
               </Label>
               <Switch
                 id="login_new_device"
@@ -181,12 +181,12 @@ export function NotificationPreferences() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-3">
             <Mail className="w-4 h-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Post Status</h4>
+            <h4 className="text-sm font-semibold">{t('settings.notificationCategories.postStatus')}</h4>
           </div>
-          <div className="space-y-3 pl-6">
+          <div className="space-y-3 ps-6">
             <div className="flex items-center justify-between">
               <Label htmlFor="post_published" className="cursor-pointer">
-                Post published successfully
+                {t('settings.notificationTypes.postPublished')}
               </Label>
               <Switch
                 id="post_published"
@@ -197,7 +197,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="post_failed" className="cursor-pointer">
-                Post failed to publish
+                {t('settings.notificationTypes.postFailed')}
               </Label>
               <Switch
                 id="post_failed"
@@ -208,7 +208,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="scheduled_reminder" className="cursor-pointer">
-                Scheduled post reminder (24h before)
+                {t('settings.notificationTypes.scheduledReminder')}
               </Label>
               <Switch
                 id="scheduled_reminder"
@@ -219,7 +219,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="analytics_milestone" className="cursor-pointer">
-                Analytics milestones (1K, 10K views)
+                {t('settings.notificationTypes.analyticsMilestone')}
               </Label>
               <Switch
                 id="analytics_milestone"
@@ -237,12 +237,12 @@ export function NotificationPreferences() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-3">
             <Users className="w-4 h-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Account Updates</h4>
+            <h4 className="text-sm font-semibold">{t('settings.notificationCategories.accountUpdates')}</h4>
           </div>
-          <div className="space-y-3 pl-6">
+          <div className="space-y-3 ps-6">
             <div className="flex items-center justify-between">
               <Label htmlFor="subscription_renewal" className="cursor-pointer">
-                Subscription renewal reminder
+                {t('settings.notificationTypes.subscriptionRenewal')}
               </Label>
               <Switch
                 id="subscription_renewal"
@@ -253,7 +253,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="payment_failed" className="cursor-pointer">
-                Payment failed
+                {t('settings.notificationTypes.paymentFailed')}
               </Label>
               <Switch
                 id="payment_failed"
@@ -264,7 +264,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="usage_limit_warning" className="cursor-pointer">
-                Usage limit approaching
+                {t('settings.notificationTypes.usageLimitWarning')}
               </Label>
               <Switch
                 id="usage_limit_warning"
@@ -275,7 +275,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="platform_disconnected" className="cursor-pointer">
-                Platform disconnected
+                {t('settings.notificationTypes.platformDisconnected')}
               </Label>
               <Switch
                 id="platform_disconnected"
@@ -293,12 +293,12 @@ export function NotificationPreferences() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-muted-foreground" />
-            <h4 className="text-sm font-semibold">Performance & Analytics</h4>
+            <h4 className="text-sm font-semibold">{t('settings.notificationCategories.performanceAnalytics')}</h4>
           </div>
-          <div className="space-y-3 pl-6">
+          <div className="space-y-3 ps-6">
             <div className="flex items-center justify-between">
               <Label htmlFor="weekly_summary" className="cursor-pointer">
-                Weekly analytics summary
+                {t('settings.notificationTypes.weeklySummary')}
               </Label>
               <Switch
                 id="weekly_summary"
@@ -309,7 +309,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="monthly_report" className="cursor-pointer">
-                Monthly performance report
+                {t('settings.notificationTypes.monthlyReport')}
               </Label>
               <Switch
                 id="monthly_report"
@@ -320,7 +320,7 @@ export function NotificationPreferences() {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="top_post_notification" className="cursor-pointer">
-                Top performing post alerts
+                {t('settings.notificationTypes.topPostNotification')}
               </Label>
               <Switch
                 id="top_post_notification"

@@ -188,7 +188,34 @@
     "profileNotInit": "Profile not initialized",
     "connectFailed": "Failed to connect platform",
     "notifications": "Email Notifications",
-    "notificationsDesc": "Manage your email notification preferences"
+    "notificationsDesc": "Manage your email notification preferences",
+    "notificationCategories": {
+      "authentication": "Authentication",
+      "postStatus": "Post Status",
+      "accountUpdates": "Account Updates",
+      "performanceAnalytics": "Performance & Analytics"
+    },
+    "notificationTypes": {
+      "welcomeEmail": "Welcome email",
+      "loginNewDevice": "Login from new device",
+      "postPublished": "Post published successfully",
+      "postFailed": "Post failed to publish",
+      "scheduledReminder": "Scheduled post reminder (24h before)",
+      "analyticsMilestone": "Analytics milestones (1K, 10K views)",
+      "subscriptionRenewal": "Subscription renewal reminder",
+      "paymentFailed": "Payment failed",
+      "usageLimitWarning": "Usage limit approaching",
+      "platformDisconnected": "Platform disconnected",
+      "weeklySummary": "Weekly analytics summary",
+      "monthlyReport": "Monthly performance report",
+      "topPostNotification": "Top performing post alerts"
+    },
+    "notificationMessages": {
+      "loadingPreferences": "Loading preferences...",
+      "preferencesUpdated": "Notification preferences updated",
+      "updateFailed": "Failed to update preferences",
+      "loadFailed": "Failed to load notification preferences"
+    }
   },
   "subscription": {
     "title": "Subscription",
