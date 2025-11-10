@@ -260,8 +260,37 @@ export default function Calendar() {
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
-                  right: "dayGridMonth",
+                  right: "dayGridMonth,timeGridWeek,timeGridDay",
                 }}
+                views={{
+                  dayGridMonth: {
+                    titleFormat: { year: "numeric", month: "long" }
+                  },
+                  timeGridWeek: {
+                    titleFormat: { year: "numeric", month: "short", day: "numeric" },
+                    dayHeaderFormat: { weekday: "short", day: "numeric" },
+                    slotLabelFormat: {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    }
+                  },
+                  timeGridDay: {
+                    titleFormat: { year: "numeric", month: "long", day: "numeric" },
+                    slotLabelFormat: {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true
+                    }
+                  }
+                }}
+                slotMinTime="00:00:00"
+                slotMaxTime="24:00:00"
+                slotDuration="01:00:00"
+                slotLabelInterval="01:00:00"
+                allDaySlot={true}
+                nowIndicator={true}
+                scrollTime="08:00:00"
                 events={filteredEvents}
                 dateClick={handleDateClick}
                 eventClick={handleEventClick}
@@ -278,11 +307,15 @@ export default function Calendar() {
                 buttonText={{
                   today: t("calendar.today"),
                   month: t("calendar.month"),
+                  week: t("calendar.week"),
+                  day: t("calendar.day"),
                 }}
                 eventClassNames="draggable-event"
                 dragRevertDuration={300}
                 dragScroll={true}
                 longPressDelay={250}
+                selectMirror={true}
+                dayMaxEvents={3}
               />
             </div>
           )}

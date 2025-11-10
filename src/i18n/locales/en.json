@@ -303,6 +303,8 @@
     "allStatuses": "All Statuses",
     "today": "Today",
     "month": "Month",
+    "week": "Week",
+    "day": "Day",
     "untitled": "Untitled Post",
     "clickToEdit": "Click event to view details (editing coming soon)",
     "loadFailed": "Failed to load calendar events",
