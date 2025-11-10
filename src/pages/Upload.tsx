@@ -275,10 +275,39 @@ const Upload = () => {
           .update({ status: "failed" })
           .eq("id", reelData.id);
         
+        // Send failure notification
+        supabase.functions.invoke('send-notification-email', {
+          body: {
+            userId: user.id,
+            emailType: 'post_failed',
+            data: {
+              postTitle: title,
+              platform: selectedAccounts.map(a => a.platform).join(', '),
+              errorMessage: postError.message,
+              postId: reelData.id,
+            }
+          }
+        }).catch(err => console.error('Email notification failed:', err));
+        
         throw postError;
       }
 
       console.log('GetLate post result:', postResult);
+
+      // Send email notification if post was published (not scheduled)
+      if (!scheduledFor) {
+        supabase.functions.invoke('send-notification-email', {
+          body: {
+            userId: user.id,
+            emailType: 'post_published',
+            data: {
+              postTitle: title,
+              platform: selectedAccounts.map(a => a.platform).join(', '),
+              postId: reelData.id,
+            }
+          }
+        }).catch(err => console.error('Email notification failed:', err));
+      }
 
       toast.success(`${t(scheduledFor ? 'upload.scheduled' : 'upload.posted')} ${selectedAccounts.length} ${t('upload.platformCount')}`);
       navigate("/dashboard");

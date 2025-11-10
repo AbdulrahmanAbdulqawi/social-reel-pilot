@@ -186,7 +186,9 @@
     "disconnectFailed": "فشل الفصل",
     "loadFailed": "فشل تحميل الحسابات المتصلة",
     "profileNotInit": "لم يتم تهيئة الملف الشخصي",
-    "connectFailed": "فشل ربط المنصة"
+    "connectFailed": "فشل ربط المنصة",
+    "notifications": "إشعارات البريد الإلكتروني",
+    "notificationsDesc": "إدارة تفضيلات إشعارات البريد الإلكتروني"
   },
   "subscription": {
     "title": "الاشتراك",

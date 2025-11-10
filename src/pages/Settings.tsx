@@ -13,6 +13,7 @@ import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { PlatformCard } from "@/components/PlatformCard";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { useTranslation } from "react-i18next";
 
 interface GetLateAccount {
@@ -463,6 +464,10 @@ const Settings = () => {
           )}
         </CardContent>
       </Card>
+
+      <div className="mt-6">
+        <NotificationPreferences />
+      </div>
     </div>
   );
 };

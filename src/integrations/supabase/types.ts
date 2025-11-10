@@ -44,6 +44,126 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          email_to: string
+          email_type: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          resend_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_to: string
+          email_type: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_to?: string
+          email_type?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          resend_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          analytics_milestone: boolean | null
+          created_at: string
+          draft_comment: boolean | null
+          email_verification: boolean | null
+          id: string
+          login_new_device: boolean | null
+          monthly_report: boolean | null
+          password_reset: boolean | null
+          payment_failed: boolean | null
+          platform_disconnected: boolean | null
+          post_approval: boolean | null
+          post_failed: boolean | null
+          post_published: boolean | null
+          scheduled_reminder: boolean | null
+          subscription_expired: boolean | null
+          subscription_renewal: boolean | null
+          team_invitation: boolean | null
+          top_post_notification: boolean | null
+          updated_at: string
+          usage_limit_warning: boolean | null
+          user_id: string
+          weekly_summary: boolean | null
+          welcome_email: boolean | null
+        }
+        Insert: {
+          analytics_milestone?: boolean | null
+          created_at?: string
+          draft_comment?: boolean | null
+          email_verification?: boolean | null
+          id?: string
+          login_new_device?: boolean | null
+          monthly_report?: boolean | null
+          password_reset?: boolean | null
+          payment_failed?: boolean | null
+          platform_disconnected?: boolean | null
+          post_approval?: boolean | null
+          post_failed?: boolean | null
+          post_published?: boolean | null
+          scheduled_reminder?: boolean | null
+          subscription_expired?: boolean | null
+          subscription_renewal?: boolean | null
+          team_invitation?: boolean | null
+          top_post_notification?: boolean | null
+          updated_at?: string
+          usage_limit_warning?: boolean | null
+          user_id: string
+          weekly_summary?: boolean | null
+          welcome_email?: boolean | null
+        }
+        Update: {
+          analytics_milestone?: boolean | null
+          created_at?: string
+          draft_comment?: boolean | null
+          email_verification?: boolean | null
+          id?: string
+          login_new_device?: boolean | null
+          monthly_report?: boolean | null
+          password_reset?: boolean | null
+          payment_failed?: boolean | null
+          platform_disconnected?: boolean | null
+          post_approval?: boolean | null
+          post_failed?: boolean | null
+          post_published?: boolean | null
+          scheduled_reminder?: boolean | null
+          subscription_expired?: boolean | null
+          subscription_renewal?: boolean | null
+          team_invitation?: boolean | null
+          top_post_notification?: boolean | null
+          updated_at?: string
+          usage_limit_warning?: boolean | null
+          user_id?: string
+          weekly_summary?: boolean | null
+          welcome_email?: boolean | null
+        }
+        Relationships: []
+      }
       platform_accounts: {
         Row: {
           access_token: string | null
@@ -79,6 +199,9 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string | null
+          email_verification_sent_at: string | null
+          email_verification_token: string | null
+          email_verified: boolean | null
           getlate_profile_id: string | null
           id: string
           onboarding_completed: boolean | null
@@ -91,6 +214,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           getlate_profile_id?: string | null
           id: string
           onboarding_completed?: boolean | null
@@ -103,6 +229,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          email_verification_sent_at?: string | null
+          email_verification_token?: string | null
+          email_verified?: boolean | null
           getlate_profile_id?: string | null
           id?: string
           onboarding_completed?: boolean | null

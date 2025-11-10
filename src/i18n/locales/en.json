@@ -186,7 +186,9 @@
     "disconnectFailed": "Failed to disconnect",
     "loadFailed": "Failed to load connected accounts",
     "profileNotInit": "Profile not initialized",
-    "connectFailed": "Failed to connect platform"
+    "connectFailed": "Failed to connect platform",
+    "notifications": "Email Notifications",
+    "notificationsDesc": "Manage your email notification preferences"
   },
   "subscription": {
     "title": "Subscription",
