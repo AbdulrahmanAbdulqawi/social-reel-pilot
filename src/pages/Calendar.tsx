@@ -4,16 +4,36 @@ import { useTranslation } from "react-i18next";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin, { EventResizeDoneArg } from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import { EventDropArg } from "@fullcalendar/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Filter, Plus } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, Plus, Download, Repeat, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, addDays, addWeeks, addMonths } from "date-fns";
+import { RecurringPostDialog } from "@/components/RecurringPostDialog";
+import { BulkActionsBar } from "@/components/BulkActionsBar";
+import { TimezoneSelector } from "@/components/TimezoneSelector";
+import { downloadICalendar, printCalendarAsPDF } from "@/lib/calendarExport";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CalendarEvent {
   id: string;
@@ -30,13 +50,6 @@ interface CalendarEvent {
   };
 }
 
-const platformColors = {
-  instagram: { bg: "#E1306C", border: "#C13584", text: "#FFFFFF" },
-  tiktok: { bg: "#000000", border: "#69C9D0", text: "#FFFFFF" },
-  youtube: { bg: "#FF0000", border: "#CC0000", text: "#FFFFFF" },
-  facebook: { bg: "#1877F2", border: "#166FE5", text: "#FFFFFF" },
-};
-
 const statusColors = {
   draft: { bg: "hsl(var(--muted))", border: "hsl(var(--border))", text: "hsl(var(--muted-foreground))" },
   scheduled: { bg: "hsl(var(--primary))", border: "hsl(var(--primary))", text: "hsl(var(--primary-foreground))" },
@@ -51,11 +64,55 @@ export default function Calendar() {
   const [loading, setLoading] = useState(true);
   const [filterPlatform, setFilterPlatform] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [timezone, setTimezone] = useState<string>("UTC");
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [recurringDialogOpen, setRecurringDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
 
   useEffect(() => {
     loadEvents();
+    loadTimezone();
   }, []);
+
+  const loadTimezone = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("timezone")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profile?.timezone) {
+        setTimezone(profile.timezone);
+      }
+    } catch (error) {
+      console.error("Error loading timezone:", error);
+    }
+  };
+
+  const saveTimezone = async (newTimezone: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ timezone: newTimezone })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      setTimezone(newTimezone);
+      toast.success(t("calendar.timezone.updated"));
+    } catch (error) {
+      console.error("Error saving timezone:", error);
+      toast.error(t("calendar.timezone.updateFailed"));
+    }
+  };
 
   const loadEvents = async () => {
     try {
@@ -72,7 +129,6 @@ export default function Calendar() {
       if (error) throw error;
 
       const calendarEvents: CalendarEvent[] = (reels || []).map((reel) => {
-        const primaryPlatform = reel.platforms?.[0] || "instagram";
         const color = statusColors[reel.status as keyof typeof statusColors] || statusColors.draft;
 
         return {
@@ -100,15 +156,26 @@ export default function Calendar() {
   };
 
   const handleDateClick = (info: any) => {
-    // Navigate to upload page with pre-filled date
+    if (bulkSelectMode) return;
     const selectedDate = format(new Date(info.dateStr), "yyyy-MM-dd");
     navigate(`/upload?date=${selectedDate}`);
   };
 
   const handleEventClick = (info: any) => {
-    // Could open a dialog to view/edit post details
-    console.log("Event clicked:", info.event);
-    toast.info(t("calendar.clickToEdit"));
+    if (bulkSelectMode) {
+      const eventId = info.event.id;
+      setSelectedEventIds((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(eventId)) {
+          newSet.delete(eventId);
+        } else {
+          newSet.add(eventId);
+        }
+        return newSet;
+      });
+    } else {
+      toast.info(t("calendar.clickToEdit"));
+    }
   };
 
   const handleEventDrop = async (info: EventDropArg) => {
@@ -128,7 +195,6 @@ export default function Calendar() {
         return;
       }
 
-      // Update the scheduled_at in the database
       const { error } = await supabase
         .from("reels")
         .update({ 
@@ -141,14 +207,136 @@ export default function Calendar() {
       if (error) throw error;
 
       toast.success(t("calendar.rescheduleSuccess"));
-      
-      // Reload events to ensure consistency
       await loadEvents();
     } catch (error) {
       console.error("Error rescheduling post:", error);
       toast.error(t("calendar.rescheduleFailed"));
       info.revert();
     }
+  };
+
+  const generateRecurringPosts = async (pattern: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get the template post data from upload page or create a basic one
+      const templatePost = {
+        user_id: user.id,
+        title: "Recurring Post",
+        status: "draft",
+        platforms: ["instagram"],
+        recurring_pattern: pattern,
+      };
+
+      const instances: any[] = [];
+      const startDate = new Date();
+      let currentDate = startDate;
+      let count = 0;
+      const maxOccurrences = pattern.occurrences || 10;
+      const endDate = pattern.endDate ? new Date(pattern.endDate) : null;
+
+      while (count < maxOccurrences && (!endDate || currentDate <= endDate)) {
+        if (pattern.frequency === "daily") {
+          currentDate = addDays(currentDate, pattern.interval);
+        } else if (pattern.frequency === "weekly") {
+          currentDate = addWeeks(currentDate, pattern.interval);
+        } else if (pattern.frequency === "monthly") {
+          currentDate = addMonths(currentDate, pattern.interval);
+        }
+
+        if (endDate && currentDate > endDate) break;
+
+        instances.push({
+          ...templatePost,
+          scheduled_at: currentDate.toISOString(),
+          is_recurring_instance: true,
+          title: `${templatePost.title} ${count + 1}`,
+        });
+
+        count++;
+      }
+
+      const { error } = await supabase.from("reels").insert(instances);
+
+      if (error) throw error;
+
+      toast.success(t("calendar.recurring.success", { count: instances.length }));
+      await loadEvents();
+    } catch (error) {
+      console.error("Error creating recurring posts:", error);
+      toast.error(t("calendar.recurring.failed"));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("reels")
+        .delete()
+        .in("id", Array.from(selectedEventIds))
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast.success(t("calendar.bulk.deleteSuccess", { count: selectedEventIds.size }));
+      setSelectedEventIds(new Set());
+      setBulkSelectMode(false);
+      setDeleteDialogOpen(false);
+      await loadEvents();
+    } catch (error) {
+      console.error("Error deleting posts:", error);
+      toast.error(t("calendar.bulk.deleteFailed"));
+    }
+  };
+
+  const handleBulkDuplicate = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: posts, error: fetchError } = await supabase
+        .from("reels")
+        .select("*")
+        .in("id", Array.from(selectedEventIds))
+        .eq("user_id", user.id);
+
+      if (fetchError) throw fetchError;
+
+      const duplicates = posts.map((post) => ({
+        ...post,
+        id: undefined,
+        title: `${post.title} (Copy)`,
+        scheduled_at: post.scheduled_at ? addDays(new Date(post.scheduled_at), 1).toISOString() : null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }));
+
+      const { error: insertError } = await supabase.from("reels").insert(duplicates);
+
+      if (insertError) throw insertError;
+
+      toast.success(t("calendar.bulk.duplicateSuccess", { count: duplicates.length }));
+      setSelectedEventIds(new Set());
+      setBulkSelectMode(false);
+      await loadEvents();
+    } catch (error) {
+      console.error("Error duplicating posts:", error);
+      toast.error(t("calendar.bulk.duplicateFailed"));
+    }
+  };
+
+  const handleExportICalendar = () => {
+    downloadICalendar(filteredEvents, "reelhub-calendar.ics");
+    toast.success(t("calendar.export.icalSuccess"));
+  };
+
+  const handleExportPDF = () => {
+    printCalendarAsPDF(filteredEvents);
+    toast.info(t("calendar.export.pdfInfo"));
   };
 
   const filteredEvents = events.filter((event) => {
@@ -158,7 +346,7 @@ export default function Calendar() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-24">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t("calendar.title")}</h1>
@@ -168,13 +356,47 @@ export default function Calendar() {
             <span>{t("calendar.dragToReschedule")}</span>
           </p>
         </div>
-        <Button onClick={() => navigate("/upload")} className="gap-2">
-          <Plus className="w-4 h-4" />
-          {t("dashboard.createPost")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={bulkSelectMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setBulkSelectMode(!bulkSelectMode);
+              if (bulkSelectMode) setSelectedEventIds(new Set());
+            }}
+            className="gap-2"
+          >
+            {bulkSelectMode ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+            {bulkSelectMode ? t("calendar.bulk.exitMode") : t("calendar.bulk.selectMode")}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                {t("calendar.export.title")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportICalendar}>
+                {t("calendar.export.ical")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF}>
+                {t("calendar.export.pdf")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={() => setRecurringDialogOpen(true)} className="gap-2">
+            <Repeat className="w-4 h-4" />
+            {t("calendar.recurring.button")}
+          </Button>
+          <Button onClick={() => navigate("/upload")} size="sm" className="gap-2">
+            <Plus className="w-4 h-4" />
+            {t("dashboard.createPost")}
+          </Button>
+        </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters and Timezone */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -214,6 +436,7 @@ export default function Calendar() {
               </SelectContent>
             </Select>
           </div>
+          <TimezoneSelector value={timezone} onChange={saveTimezone} className="space-y-2" />
         </CardContent>
       </Card>
 
@@ -295,8 +518,8 @@ export default function Calendar() {
                 dateClick={handleDateClick}
                 eventClick={handleEventClick}
                 eventDrop={handleEventDrop}
-                editable={true}
-                droppable={true}
+                editable={!bulkSelectMode}
+                droppable={!bulkSelectMode}
                 height="auto"
                 eventDisplay="block"
                 eventTimeFormat={{
@@ -310,7 +533,13 @@ export default function Calendar() {
                   week: t("calendar.week"),
                   day: t("calendar.day"),
                 }}
-                eventClassNames="draggable-event"
+                eventClassNames={(arg) => {
+                  const classes = ["draggable-event"];
+                  if (selectedEventIds.has(arg.event.id)) {
+                    classes.push("fc-event-selected");
+                  }
+                  return classes;
+                }}
                 dragRevertDuration={300}
                 dragScroll={true}
                 longPressDelay={250}
@@ -321,6 +550,46 @@ export default function Calendar() {
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Actions Bar */}
+      {bulkSelectMode && (
+        <BulkActionsBar
+          selectedCount={selectedEventIds.size}
+          onDelete={() => setDeleteDialogOpen(true)}
+          onDuplicate={handleBulkDuplicate}
+          onReschedule={() => toast.info(t("calendar.bulk.rescheduleInfo"))}
+          onClear={() => {
+            setSelectedEventIds(new Set());
+            setBulkSelectMode(false);
+          }}
+        />
+      )}
+
+      {/* Recurring Post Dialog */}
+      <RecurringPostDialog
+        open={recurringDialogOpen}
+        onOpenChange={setRecurringDialogOpen}
+        onConfirm={generateRecurringPosts}
+        timezone={timezone}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("calendar.bulk.deleteConfirm")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("calendar.bulk.deleteWarning", { count: selectedEventIds.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90">
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

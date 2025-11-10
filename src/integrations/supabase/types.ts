@@ -207,6 +207,7 @@ export type Database = {
           onboarding_completed: boolean | null
           onboarding_started_at: string | null
           onboarding_step: number | null
+          timezone: string | null
           updated_at: string
           username: string | null
         }
@@ -222,6 +223,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           onboarding_started_at?: string | null
           onboarding_step?: number | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -237,6 +239,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           onboarding_started_at?: string | null
           onboarding_step?: number | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -290,12 +293,15 @@ export type Database = {
           getlate_post_id: string | null
           hashtags: string[] | null
           id: string
+          is_recurring_instance: boolean | null
           media_items: Json | null
           media_type: string | null
+          parent_post_id: string | null
           platform: Database["public"]["Enums"]["platform_type"]
           platforms: string[] | null
           posted_at: string | null
           posting_method: string | null
+          recurring_pattern: Json | null
           scheduled_at: string | null
           status: Database["public"]["Enums"]["reel_status"]
           thumbnail_url: string | null
@@ -310,12 +316,15 @@ export type Database = {
           getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
+          is_recurring_instance?: boolean | null
           media_items?: Json | null
           media_type?: string | null
+          parent_post_id?: string | null
           platform: Database["public"]["Enums"]["platform_type"]
           platforms?: string[] | null
           posted_at?: string | null
           posting_method?: string | null
+          recurring_pattern?: Json | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["reel_status"]
           thumbnail_url?: string | null
@@ -330,12 +339,15 @@ export type Database = {
           getlate_post_id?: string | null
           hashtags?: string[] | null
           id?: string
+          is_recurring_instance?: boolean | null
           media_items?: Json | null
           media_type?: string | null
+          parent_post_id?: string | null
           platform?: Database["public"]["Enums"]["platform_type"]
           platforms?: string[] | null
           posted_at?: string | null
           posting_method?: string | null
+          recurring_pattern?: Json | null
           scheduled_at?: string | null
           status?: Database["public"]["Enums"]["reel_status"]
           thumbnail_url?: string | null
@@ -344,7 +356,15 @@ export type Database = {
           user_id?: string
           video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reels_parent_post_id_fkey"
+            columns: ["parent_post_id"]
+            isOneToOne: false
+            referencedRelation: "reels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

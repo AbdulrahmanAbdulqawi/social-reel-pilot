@@ -313,7 +313,56 @@
     "invalidDate": "تاريخ غير صالح",
     "rescheduleSuccess": "تم إعادة جدولة المنشور بنجاح",
     "rescheduleFailed": "فشل إعادة جدولة المنشور",
-    "dragToReschedule": "اسحب المنشورات لإعادة جدولتها"
+    "dragToReschedule": "اسحب المنشورات لإعادة جدولتها",
+    "timezone": {
+      "label": "المنطقة الزمنية",
+      "select": "اختر المنطقة الزمنية",
+      "updated": "تم تحديث المنطقة الزمنية بنجاح",
+      "updateFailed": "فشل تحديث المنطقة الزمنية"
+    },
+    "bulk": {
+      "selectMode": "تحديد متعدد",
+      "exitMode": "إنهاء وضع التحديد المتعدد",
+      "selected": "محدد",
+      "delete": "حذف",
+      "duplicate": "تكرار",
+      "reschedule": "إعادة جدولة",
+      "deleteConfirm": "حذف المنشورات المحددة؟",
+      "deleteWarning": "هل أنت متأكد من حذف {{count}} منشور؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleteSuccess": "تم حذف {{count}} منشور بنجاح",
+      "deleteFailed": "فشل حذف المنشورات",
+      "duplicateSuccess": "تم تكرار {{count}} منشور بنجاح",
+      "duplicateFailed": "فشل تكرار المنشورات",
+      "rescheduleInfo": "اسحب الأحداث المحددة لإعادة جدولتها"
+    },
+    "export": {
+      "title": "تصدير",
+      "ical": "تصدير كتقويم (.ics)",
+      "pdf": "طباعة كـ PDF",
+      "icalSuccess": "تم تصدير التقويم بنجاح",
+      "pdfInfo": "فتح مربع حوار الطباعة..."
+    },
+    "recurring": {
+      "button": "منشور متكرر",
+      "title": "إنشاء منشورات متكررة",
+      "description": "قم بإعداد جدول لإنشاء المنشورات تلقائياً على فترات منتظمة",
+      "frequency": "التكرار",
+      "daily": "يومياً",
+      "weekly": "أسبوعياً",
+      "monthly": "شهرياً",
+      "every": "كرر كل",
+      "days": "يوم",
+      "weeks": "أسبوع",
+      "months": "شهر",
+      "daysOfWeek": "أيام الأسبوع",
+      "ends": "ينتهي",
+      "after": "بعد",
+      "occurrences": "مرة",
+      "on": "في التاريخ",
+      "create": "إنشاء منشورات متكررة",
+      "success": "تم إنشاء {{count}} منشور متكرر",
+      "failed": "فشل إنشاء المنشورات المتكررة"
+    }
   },
   "contact": {
     "title": "تواصل معنا",

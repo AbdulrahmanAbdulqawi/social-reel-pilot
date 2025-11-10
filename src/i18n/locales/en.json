@@ -312,7 +312,56 @@
     "invalidDate": "Invalid date selected",
     "rescheduleSuccess": "Post rescheduled successfully",
     "rescheduleFailed": "Failed to reschedule post",
-    "dragToReschedule": "Drag posts to reschedule them"
+    "dragToReschedule": "Drag posts to reschedule them",
+    "timezone": {
+      "label": "Timezone",
+      "select": "Select timezone",
+      "updated": "Timezone updated successfully",
+      "updateFailed": "Failed to update timezone"
+    },
+    "bulk": {
+      "selectMode": "Bulk Select",
+      "exitMode": "Exit Bulk Mode",
+      "selected": "selected",
+      "delete": "Delete",
+      "duplicate": "Duplicate",
+      "reschedule": "Reschedule",
+      "deleteConfirm": "Delete Selected Posts?",
+      "deleteWarning": "Are you sure you want to delete {{count}} post(s)? This action cannot be undone.",
+      "deleteSuccess": "Successfully deleted {{count}} post(s)",
+      "deleteFailed": "Failed to delete posts",
+      "duplicateSuccess": "Successfully duplicated {{count}} post(s)",
+      "duplicateFailed": "Failed to duplicate posts",
+      "rescheduleInfo": "Drag the selected events to reschedule them"
+    },
+    "export": {
+      "title": "Export",
+      "ical": "Export as iCalendar (.ics)",
+      "pdf": "Print as PDF",
+      "icalSuccess": "Calendar exported successfully",
+      "pdfInfo": "Opening print dialog..."
+    },
+    "recurring": {
+      "button": "Recurring Post",
+      "title": "Create Recurring Posts",
+      "description": "Set up a schedule to automatically create posts at regular intervals",
+      "frequency": "Frequency",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "every": "Repeat every",
+      "days": "day(s)",
+      "weeks": "week(s)",
+      "months": "month(s)",
+      "daysOfWeek": "Days of Week",
+      "ends": "Ends",
+      "after": "After",
+      "occurrences": "occurrence(s)",
+      "on": "On date",
+      "create": "Create Recurring Posts",
+      "success": "Created {{count}} recurring posts",
+      "failed": "Failed to create recurring posts"
+    }
   },
   "contact": {
     "title": "Get in Touch",
