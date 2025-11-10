@@ -113,7 +113,7 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          `flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                          `flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sm ${
                             isActive
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -135,7 +135,7 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        `flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                        `flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sm ${
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -166,7 +166,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleSignOut} 
-              className={`flex items-center ${collapsed ? 'justify-center' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} px-3 py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
+              className={`flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
               title={collapsed ? t('nav.signOut') : undefined}
             >
               <LogOut className="w-5 h-5 shrink-0" />
