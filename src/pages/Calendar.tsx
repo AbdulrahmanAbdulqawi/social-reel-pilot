@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin, { EventResizeDoneArg } from "@fullcalendar/interaction";
+import { EventDropArg } from "@fullcalendar/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -109,6 +111,46 @@ export default function Calendar() {
     toast.info(t("calendar.clickToEdit"));
   };
 
+  const handleEventDrop = async (info: EventDropArg) => {
+    const eventId = info.event.id;
+    const newStart = info.event.start;
+
+    if (!newStart) {
+      info.revert();
+      toast.error(t("calendar.invalidDate"));
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        info.revert();
+        return;
+      }
+
+      // Update the scheduled_at in the database
+      const { error } = await supabase
+        .from("reels")
+        .update({ 
+          scheduled_at: newStart.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", eventId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast.success(t("calendar.rescheduleSuccess"));
+      
+      // Reload events to ensure consistency
+      await loadEvents();
+    } catch (error) {
+      console.error("Error rescheduling post:", error);
+      toast.error(t("calendar.rescheduleFailed"));
+      info.revert();
+    }
+  };
+
   const filteredEvents = events.filter((event) => {
     const platformMatch = filterPlatform === "all" || event.extendedProps.platforms.includes(filterPlatform);
     const statusMatch = filterStatus === "all" || event.extendedProps.status === filterStatus;
@@ -117,10 +159,14 @@ export default function Calendar() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">{t("calendar.title")}</h1>
           <p className="text-muted-foreground mt-1">{t("calendar.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+            <span>💡</span>
+            <span>{t("calendar.dragToReschedule")}</span>
+          </p>
         </div>
         <Button onClick={() => navigate("/upload")} className="gap-2">
           <Plus className="w-4 h-4" />
@@ -209,7 +255,7 @@ export default function Calendar() {
             <div className="calendar-wrapper">
               <FullCalendar
                 ref={calendarRef}
-                plugins={[dayGridPlugin, interactionPlugin]}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 headerToolbar={{
                   left: "prev,next today",
@@ -219,6 +265,9 @@ export default function Calendar() {
                 events={filteredEvents}
                 dateClick={handleDateClick}
                 eventClick={handleEventClick}
+                eventDrop={handleEventDrop}
+                editable={true}
+                droppable={true}
                 height="auto"
                 eventDisplay="block"
                 eventTimeFormat={{
@@ -230,6 +279,10 @@ export default function Calendar() {
                   today: t("calendar.today"),
                   month: t("calendar.month"),
                 }}
+                eventClassNames="draggable-event"
+                dragRevertDuration={300}
+                dragScroll={true}
+                longPressDelay={250}
               />
             </div>
           )}

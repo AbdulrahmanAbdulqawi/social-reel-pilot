@@ -306,7 +306,11 @@
     "untitled": "Untitled Post",
     "clickToEdit": "Click event to view details (editing coming soon)",
     "loadFailed": "Failed to load calendar events",
-    "failed": "Failed"
+    "failed": "Failed",
+    "invalidDate": "Invalid date selected",
+    "rescheduleSuccess": "Post rescheduled successfully",
+    "rescheduleFailed": "Failed to reschedule post",
+    "dragToReschedule": "Drag posts to reschedule them"
   },
   "contact": {
     "title": "Get in Touch",

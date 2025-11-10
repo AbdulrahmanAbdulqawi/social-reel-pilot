@@ -307,7 +307,11 @@
     "untitled": "منشور بدون عنوان",
     "clickToEdit": "انقر على الحدث لعرض التفاصيل (التعديل قريباً)",
     "loadFailed": "فشل تحميل أحداث التقويم",
-    "failed": "فشل"
+    "failed": "فشل",
+    "invalidDate": "تاريخ غير صالح",
+    "rescheduleSuccess": "تم إعادة جدولة المنشور بنجاح",
+    "rescheduleFailed": "فشل إعادة جدولة المنشور",
+    "dragToReschedule": "اسحب المنشورات لإعادة جدولتها"
   },
   "contact": {
     "title": "تواصل معنا",
