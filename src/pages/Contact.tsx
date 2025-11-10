@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<ContactFormValues>({
@@ -64,8 +66,8 @@ export default function Contact() {
 
       toast({
         variant: "success",
-        title: "Message Sent!",
-        description: "We'll get back to you as soon as possible.",
+        title: t('contact.messageSent'),
+        description: t('contact.messageReceived'),
       });
 
       form.reset();
@@ -73,8 +75,8 @@ export default function Contact() {
       console.error('Error sending contact email:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
+        title: t('errors.somethingWrong'),
+        description: error.message || t('contact.messageError'),
       });
     } finally {
       setLoading(false);
@@ -107,9 +109,9 @@ export default function Contact() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Get in Touch</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('contact.title')}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Have a question or need help? We're here to assist you. Send us a message and we'll respond as soon as possible.
+            {t('contact.subtitle')}
           </p>
         </div>
 
@@ -118,9 +120,9 @@ export default function Contact() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Send us a Message</CardTitle>
+                <CardTitle>{t('contact.sendMessage')}</CardTitle>
                 <CardDescription>
-                  Fill out the form below and we'll get back to you within 24 hours.
+                  {t('contact.sendMessageDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -132,9 +134,9 @@ export default function Contact() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Name *</FormLabel>
+                            <FormLabel>{t('contact.name')} *</FormLabel>
                             <FormControl>
-                              <Input placeholder="John Doe" {...field} />
+                              <Input placeholder={t('contact.namePlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -146,9 +148,9 @@ export default function Contact() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email *</FormLabel>
+                            <FormLabel>{t('contact.email')} *</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="john@example.com" {...field} />
+                              <Input type="email" placeholder={t('contact.emailPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -161,9 +163,9 @@ export default function Contact() {
                       name="subject"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Subject *</FormLabel>
+                          <FormLabel>{t('contact.subject')} *</FormLabel>
                           <FormControl>
-                            <Input placeholder="How can we help you?" {...field} />
+                            <Input placeholder={t('contact.subjectPlaceholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -175,10 +177,10 @@ export default function Contact() {
                       name="message"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Message *</FormLabel>
+                          <FormLabel>{t('contact.message')} *</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Tell us more about your inquiry..."
+                              placeholder={t('contact.messagePlaceholder')}
                               className="min-h-[150px] resize-none"
                               {...field}
                             />
@@ -190,7 +192,7 @@ export default function Contact() {
 
                     <Button type="submit" disabled={loading} className="w-full">
                       <Send className="h-4 w-4 mr-2" />
-                      {loading ? "Sending..." : "Send Message"}
+                      {loading ? t('contact.sending') : t('contact.send')}
                     </Button>
                   </form>
                 </Form>
@@ -202,9 +204,9 @@ export default function Contact() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
+                <CardTitle>{t('contact.contactInfo')}</CardTitle>
                 <CardDescription>
-                  You can also reach us through these channels
+                  {t('contact.contactInfoDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -238,20 +240,20 @@ export default function Contact() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Business Hours</CardTitle>
+                <CardTitle>{t('contact.businessHours')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Monday - Friday</span>
+                  <span className="text-muted-foreground">{t('contact.mondayFriday')}</span>
                   <span className="font-medium">9:00 AM - 6:00 PM</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Saturday</span>
+                  <span className="text-muted-foreground">{t('contact.saturday')}</span>
                   <span className="font-medium">10:00 AM - 4:00 PM</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Sunday</span>
-                  <span className="font-medium">Closed</span>
+                  <span className="text-muted-foreground">{t('contact.sunday')}</span>
+                  <span className="font-medium">{t('contact.closed')}</span>
                 </div>
               </CardContent>
             </Card>

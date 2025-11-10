@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,35 +9,35 @@ import { Upload, Calendar, Link2, BarChart3, Sparkles, CheckCircle2 } from "luci
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
-const MILESTONES = [
+const getMilestones = (t: any) => [
   {
     id: 1,
-    title: "Upload Your First Reel",
-    description: "Start by uploading your first video content",
+    title: t('onboarding.uploadFirstReel'),
+    description: t('onboarding.uploadFirstReelDesc'),
     icon: Upload,
     route: "/upload",
     color: "from-primary to-primary-light"
   },
   {
     id: 2,
-    title: "Schedule Posts",
-    description: "Learn how to schedule content for optimal times",
+    title: t('onboarding.schedulePosts'),
+    description: t('onboarding.schedulePostsDesc'),
     icon: Calendar,
     route: "/dashboard",
     color: "from-primary-light to-primary-glow"
   },
   {
     id: 3,
-    title: "Connect Platforms",
-    description: "Link your social media accounts",
+    title: t('onboarding.connectPlatformsTitle'),
+    description: t('onboarding.connectPlatformsDesc'),
     icon: Link2,
     route: "/settings",
     color: "from-primary-glow to-primary"
   },
   {
     id: 4,
-    title: "Track Analytics",
-    description: "Monitor your content performance",
+    title: t('onboarding.trackAnalyticsTitle'),
+    description: t('onboarding.trackAnalyticsDesc'),
     icon: BarChart3,
     route: "/analytics",
     color: "from-primary to-primary-glow"
@@ -45,10 +46,12 @@ const MILESTONES = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const MILESTONES = getMilestones(t);
 
   useEffect(() => {
     // Load progress from database
@@ -119,14 +122,14 @@ const Onboarding = () => {
     });
 
     setTimeout(() => {
-      toast.success("🎉 Onboarding completed! Welcome to ReelHub!");
+      toast.success(`🎉 ${t('onboarding.congratsMessage')}`);
       navigate("/dashboard");
     }, 2000);
   };
 
   const handleSkip = async () => {
     await saveProgress(MILESTONES.length, true);
-    toast.info("You can always revisit the tutorial from Settings");
+    toast.info(t('onboarding.revisitTutorial'));
     navigate("/dashboard");
   };
 
@@ -167,10 +170,10 @@ const Onboarding = () => {
               </div>
             </div>
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-primary-light to-primary-glow bg-clip-text text-transparent">
-              Welcome to ReelHub!
+              {t('onboarding.welcome')}
             </h1>
             <p className="text-muted-foreground text-lg">
-              Your journey to mastering content creation starts here
+              {t('onboarding.journeyStarts')}
             </p>
           </div>
 
@@ -178,7 +181,7 @@ const Onboarding = () => {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-foreground">
-                Progress: {completedSteps.length}/{MILESTONES.length} completed
+                {t('onboarding.step')} {completedSteps.length}/{MILESTONES.length}
               </span>
               <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
             </div>
@@ -248,7 +251,7 @@ const Onboarding = () => {
                   className="flex-1 bg-gradient-to-r from-primary to-primary-light hover:shadow-glow transition-all"
                   size="lg"
                 >
-                  Explore This Feature
+                  {t('onboarding.exploreFeature')}
                 </Button>
                 <Button
                   onClick={handleStepComplete}
@@ -256,7 +259,7 @@ const Onboarding = () => {
                   className="flex-1"
                   size="lg"
                 >
-                  Mark as Complete
+                  {t('onboarding.markComplete')}
                 </Button>
               </div>
             </div>
@@ -266,17 +269,17 @@ const Onboarding = () => {
           {!currentMilestone && !showCelebration && completedSteps.length === MILESTONES.length && (
             <div className="bg-card border border-primary rounded-lg p-6 mb-6 animate-fade-in text-center">
               <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-primary via-primary-light to-primary-glow bg-clip-text text-transparent">
-                All Steps Completed! 🎯
+                {t('onboarding.allStepsCompleted')}
               </h2>
               <p className="text-muted-foreground mb-4">
-                You've explored all the features. Ready to start your journey?
+                {t('onboarding.allStepsCompletedDesc')}
               </p>
               <Button
                 onClick={handleFinishOnboarding}
                 className="bg-gradient-to-r from-primary to-primary-light hover:shadow-glow transition-all"
                 size="lg"
               >
-                Finish & Start Creating
+                {t('onboarding.finishStart')}
               </Button>
             </div>
           )}
@@ -288,10 +291,10 @@ const Onboarding = () => {
                 <Sparkles className="w-20 h-20 mx-auto text-primary animate-pulse" />
               </div>
               <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary via-primary-light to-primary-glow bg-clip-text text-transparent">
-                Congratulations! 🎉
+                {t('onboarding.congratsMessage')}
               </h2>
               <p className="text-muted-foreground text-lg">
-                You're all set to create amazing content!
+                {t('onboarding.congratsDesc')}
               </p>
             </div>
           )}
@@ -303,10 +306,10 @@ const Onboarding = () => {
               variant="ghost"
               disabled={isLoading || showCelebration}
             >
-              Skip Tutorial
+              {t('onboarding.skipTutorial')}
             </Button>
             <p className="text-sm text-muted-foreground">
-              Step {currentStep + 1} of {MILESTONES.length}
+              {t('onboarding.step')} {currentStep + 1} {t('onboarding.of')} {MILESTONES.length}
             </p>
           </div>
         </CardContent>

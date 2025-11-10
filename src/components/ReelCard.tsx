@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Eye, Heart, MessageCircle, MoreVertical, Share2, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,7 @@ const platformColors = {
 };
 
 export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
+  const { t } = useTranslation();
   const statusColor = statusColors[reel.status as keyof typeof statusColors] || statusColors.draft;
   const platformColor = platformColors[reel.platform as keyof typeof platformColors] || "bg-muted";
   const [analytics, setAnalytics] = useState<any>(null);
@@ -111,12 +113,12 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
             <DropdownMenuContent align="end">
               {onView && (
                 <DropdownMenuItem onClick={() => onView(reel.id)}>
-                  View Details
+                  {t('common.viewDetails')}
                 </DropdownMenuItem>
               )}
               {onEdit && (
                 <DropdownMenuItem onClick={() => onEdit(reel.id)}>
-                  Edit
+                  {t('common.edit')}
                 </DropdownMenuItem>
               )}
               {onDelete && (
@@ -124,7 +126,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
                   onClick={() => onDelete(reel.id)}
                   className="text-destructive"
                 >
-                  Delete
+                  {t('common.delete')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -155,7 +157,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
           {loadingAnalytics ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-              <span>Loading analytics...</span>
+              <span>{t('common.loadingAnalytics')}</span>
             </div>
           ) : analytics ? (
             <div className="flex gap-6 text-sm w-full">
@@ -165,7 +167,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.views?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">Views</div>
+                  <div className="text-xs text-muted-foreground">{t('common.views')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 group">
@@ -174,7 +176,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.likes?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">Likes</div>
+                  <div className="text-xs text-muted-foreground">{t('common.likes')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 group">
@@ -183,7 +185,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.comments?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">Comments</div>
+                  <div className="text-xs text-muted-foreground">{t('common.comments')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 group">
@@ -192,12 +194,12 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.shares?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">Shares</div>
+                  <div className="text-xs text-muted-foreground">{t('common.shares')}</div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">No analytics available yet</div>
+            <div className="text-sm text-muted-foreground">{t('common.noAnalytics')}</div>
           )}
         </CardFooter>
       )}

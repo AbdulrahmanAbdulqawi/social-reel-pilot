@@ -366,7 +366,7 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-username">{t('auth.email')}</Label>
+                  <Label htmlFor="signup-username">{t('auth.username')}</Label>
                   <Input
                     id="signup-username"
                     type="text"

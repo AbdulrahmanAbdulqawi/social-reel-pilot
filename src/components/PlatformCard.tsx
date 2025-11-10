@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface PlatformCardProps {
   name: string;
@@ -28,6 +29,8 @@ export function PlatformCard({
   onConnect,
   onDisconnect,
 }: PlatformCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="p-3 sm:p-4 border rounded-lg hover:bg-accent/50 hover:border-primary/20 transition-all duration-300 hover-lift animate-fade-in">
       {/* Mobile Layout: Stacked */}
@@ -68,7 +71,7 @@ export function PlatformCard({
           className="w-full hover-lift"
           aria-label={connected ? `Disconnect ${name}` : `Connect ${name}`}
         >
-          {loading ? "Loading..." : connected ? "Disconnect" : "Connect"}
+          {loading ? t('common.loading') : connected ? t('common.disconnect') : t('common.connect')}
         </Button>
       </div>
 
@@ -105,7 +108,7 @@ export function PlatformCard({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
                 </span>
-                <span className="text-sm text-muted-foreground">Connected</span>
+                <span className="text-sm text-muted-foreground">{t('common.connected')}</span>
               </div>
               <Button
                 variant="outline"
@@ -115,7 +118,7 @@ export function PlatformCard({
                 className="hover-lift"
                 aria-label={`Disconnect ${name}`}
               >
-                Disconnect
+                {t('common.disconnect')}
               </Button>
             </>
           ) : (
@@ -127,7 +130,7 @@ export function PlatformCard({
               className="hover-lift"
               aria-label={`Connect ${name}`}
             >
-              {loading ? "Loading..." : "Connect"}
+              {loading ? t('common.loading') : t('common.connect')}
             </Button>
           )}
         </div>
