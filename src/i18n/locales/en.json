@@ -42,7 +42,8 @@
     "subscription": "Subscription",
     "contact": "Contact",
     "signOut": "Sign Out",
-    "adminPanel": "Admin Panel"
+    "adminPanel": "Admin Panel",
+    "account": "Account"
   },
   "auth": {
     "signIn": "Sign In",
