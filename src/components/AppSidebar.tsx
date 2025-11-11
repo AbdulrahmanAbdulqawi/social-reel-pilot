@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -159,7 +160,8 @@ export function AppSidebar() {
         <SidebarMenu className="space-y-0.5 sm:space-y-1">
           {!collapsed && (
             <SidebarMenuItem>
-              <div className="px-1 sm:px-2 py-1 sm:py-2">
+              <div className="px-1 sm:px-2 py-1 sm:py-2 flex gap-2">
+                <ThemeToggle />
                 <LanguageSwitcher />
               </div>
             </SidebarMenuItem>
