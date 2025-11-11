@@ -39,24 +39,22 @@ export function LanguageSwitcher() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="gap-2 min-w-[140px] justify-start border-border/40 hover:border-primary/20 hover:bg-accent/50 transition-all"
+          className="gap-1.5 px-2 sm:px-3 border-border/40 hover:border-primary/20 hover:bg-accent/50 transition-all"
         >
-          <span className="text-2xl">{currentLanguage.flag}</span>
-          <span className="flex-1 text-left font-medium">{currentLanguage.nativeName}</span>
-          <Languages className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xl sm:text-2xl">{currentLanguage.flag}</span>
+          <Languages className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[160px]">
+      <DropdownMenuContent align="end" className="min-w-[120px]">
         {languages.map((language) => {
           const isActive = i18n.language === language.code;
           return (
             <DropdownMenuItem
               key={language.code}
               onClick={() => changeLanguage(language.code)}
-              className={`gap-3 cursor-pointer ${isActive ? 'bg-accent' : ''}`}
+              className={`gap-2 cursor-pointer justify-between ${isActive ? 'bg-accent' : ''}`}
             >
               <span className="text-2xl">{language.flag}</span>
-              <span className="flex-1 font-medium">{language.nativeName}</span>
               {isActive && <Check className="h-4 w-4 text-primary" />}
             </DropdownMenuItem>
           );
