@@ -144,10 +144,10 @@ const Dashboard = () => {
 
       {/* Stats Cards with animations */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-        <div className="group relative overflow-hidden p-4 sm:p-6 border rounded-xl bg-gradient-to-br from-card to-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div className="card-elevated group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-card to-card/50 hover-lift">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
           <div className="relative">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
+            <div className="flex-gap-sm text-muted-xs sm:text-muted-sm mb-2">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
               {t('dashboard.totalPosts')}
             </div>
@@ -155,10 +155,10 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <div className="group relative overflow-hidden p-4 sm:p-6 border rounded-xl bg-gradient-to-br from-primary/5 to-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div className="card-elevated group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-primary/5 to-card hover-lift">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
           <div className="relative">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
+            <div className="flex-gap-sm text-muted-xs sm:text-muted-sm mb-2">
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
               {t('dashboard.scheduled')}
             </div>
@@ -168,10 +168,10 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <div className="group relative overflow-hidden p-4 sm:p-6 border rounded-xl bg-gradient-to-br from-green-500/5 to-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+        <div className="card-elevated group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-green-500/5 to-card hover-lift">
           <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
           <div className="relative">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
+            <div className="flex-gap-sm text-muted-xs sm:text-muted-sm mb-2">
               <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
               {t('dashboard.posted')}
             </div>

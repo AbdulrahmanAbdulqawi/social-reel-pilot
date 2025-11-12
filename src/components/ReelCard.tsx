@@ -82,7 +82,7 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
   }, [reel.id, reel.status]);
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/20">
+    <Card className="card-interactive group overflow-hidden hover:shadow-xl hover:-translate-y-1 border-2">
       <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
         {reel.thumbnail_url ? (
           <img
@@ -91,12 +91,12 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="flex-center w-full h-full">
             <TrendingUp className="w-16 h-16 text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-300" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <Badge className={`absolute top-3 right-3 ${statusColor} shadow-lg`}>
+        <Badge className={`absolute top-2 right-2 sm:top-3 sm:right-3 ${statusColor} shadow-lg`}>
           {reel.status}
         </Badge>
       </div>
@@ -139,12 +139,12 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
           </p>
         )}
         
-        <div className="flex items-center gap-2">
+        <div className="flex-gap-sm">
           <Badge variant="outline" className={platformColor}>
             {reel.platform}
           </Badge>
           {reel.scheduled_at && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="flex-gap-sm text-muted-xs">
               <Calendar className="w-3 h-3" />
               {format(new Date(reel.scheduled_at), "MMM d, h:mm a")}
             </div>
@@ -153,53 +153,53 @@ export function ReelCard({ reel, onView, onEdit, onDelete }: ReelCardProps) {
       </CardContent>
 
       {reel.status === "posted" && (
-        <CardFooter className="border-t p-4 bg-gradient-to-br from-muted/20 to-muted/5">
+        <CardFooter className="border-t p-3 sm:p-4 bg-gradient-to-br from-muted/20 to-muted/5">
           {loadingAnalytics ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex-gap-sm text-muted-sm">
               <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
               <span>{t('common.loadingAnalytics')}</span>
             </div>
           ) : analytics ? (
-            <div className="flex gap-6 text-sm w-full">
-              <div className="flex items-center gap-2 group">
+            <div className="flex flex-wrap gap-4 sm:gap-6 text-sm w-full">
+              <div className="flex-gap-sm group">
                 <div className="p-1.5 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
                   <Eye className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.views?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">{t('common.views')}</div>
+                  <div className="text-muted-xs">{t('common.views')}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 group">
+              <div className="flex-gap-sm group">
                 <div className="p-1.5 rounded-lg bg-pink-500/10 group-hover:bg-pink-500/20 transition-colors">
                   <Heart className="w-4 h-4 text-pink-600" />
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.likes?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">{t('common.likes')}</div>
+                  <div className="text-muted-xs">{t('common.likes')}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 group">
+              <div className="flex-gap-sm group">
                 <div className="p-1.5 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
                   <MessageCircle className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.comments?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">{t('common.comments')}</div>
+                  <div className="text-muted-xs">{t('common.comments')}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 group">
+              <div className="flex-gap-sm group">
                 <div className="p-1.5 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
                   <Share2 className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
                   <div className="font-semibold">{analytics.shares?.toLocaleString() || 0}</div>
-                  <div className="text-xs text-muted-foreground">{t('common.shares')}</div>
+                  <div className="text-muted-xs">{t('common.shares')}</div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">{t('common.noAnalytics')}</div>
+            <div className="text-muted-sm">{t('common.noAnalytics')}</div>
           )}
         </CardFooter>
       )}
