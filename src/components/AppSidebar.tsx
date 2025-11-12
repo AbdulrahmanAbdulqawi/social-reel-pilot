@@ -66,7 +66,7 @@ export function AppSidebar() {
       className="border-r"
     >
       <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2 sm:gap-3 justify-between'} w-full`}>
+        <div className={`${collapsed ? 'flex-center' : 'flex-between gap-2 sm:gap-3'} w-full`}>
           {collapsed ? (
             <button
               type="button"
@@ -78,7 +78,7 @@ export function AppSidebar() {
             </button>
           ) : (
             <>
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="flex-gap-md min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={toggleSidebar}

@@ -2,71 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ============================================================================
+   DESIGN SYSTEM
+   All colors, gradients, shadows, and design tokens are defined here.
+   All colors MUST be HSL format for theme consistency.
+   ============================================================================ */
 
 @layer base {
+  /* ===== DEFAULT THEME (Medium Dark) ===== */
   :root {
+    /* --- Core Colors --- */
     --background: 0 0% 10%;
     --foreground: 0 0% 98%;
-
+    
+    /* --- Surface Colors --- */
     --card: 0 0% 14%;
     --card-foreground: 0 0% 98%;
-
     --popover: 0 0% 14%;
     --popover-foreground: 0 0% 98%;
-
-    /* Gold primary color */
+    
+    /* --- Brand Colors (Gold) --- */
     --primary: 51 100% 50%;
     --primary-foreground: 0 0% 0%;
-    
-    /* Lighter gold for accents */
     --primary-light: 51 100% 60%;
     --primary-glow: 51 100% 70%;
     --primary-dark: 51 100% 20%;
-
+    
+    /* --- Secondary Colors --- */
     --secondary: 0 0% 20%;
     --secondary-foreground: 0 0% 98%;
-
+    
+    /* --- Muted Colors --- */
     --muted: 0 0% 20%;
     --muted-foreground: 0 0% 65%;
-
+    
+    /* --- Accent Colors --- */
     --accent: 51 100% 50%;
     --accent-foreground: 0 0% 0%;
-
+    
+    /* --- Status Colors --- */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    
     --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
-
+    
+    /* --- Interactive Elements --- */
     --border: 0 0% 25%;
     --input: 0 0% 25%;
     --ring: 51 100% 50%;
-
     --radius: 0.5rem;
     
-    /* Enhanced Gradients */
+    /* --- Gradients --- */
     --gradient-primary: linear-gradient(135deg, hsl(51 100% 40%), hsl(51 100% 60%));
     --gradient-primary-intense: linear-gradient(135deg, hsl(51 100% 40%), hsl(51 100% 70%));
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 14%), hsl(0 0% 10%));
     --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(0 0% 10% / 0.7) 100%);
     --gradient-radial: radial-gradient(circle at 50% 50%, hsl(51 100% 50% / 0.15), transparent 70%);
     
-    /* Enhanced Shadows */
+    /* --- Shadows --- */
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.3), 0 4px 16px -4px hsl(0 0% 0% / 0.2);
     --shadow-glow: 0 0 20px hsl(51 100% 60% / 0.4), 0 0 40px hsl(51 100% 60% / 0.2);
     --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.4);
     --shadow-focus: 0 0 0 3px hsl(51 100% 50% / 0.3);
-
-    /* Sidebar colors */
+    
+    /* --- Sidebar Colors --- */
     --sidebar-background: 0 0% 12%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 51 100% 50%;
@@ -75,50 +78,40 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 51 100% 50%;
-
-    /* Transitions */
+    
+    /* --- Transitions --- */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* ===== DARK THEME ===== */
   .dark {
     --background: 0 0% 5%;
     --foreground: 0 0% 98%;
-
     --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
-
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
-
     --primary: 51 100% 50%;
     --primary-foreground: 0 0% 0%;
     --primary-light: 51 100% 60%;
     --primary-glow: 51 100% 70%;
-
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
-
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%;
-
     --accent: 51 100% 50%;
     --accent-foreground: 0 0% 0%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 51 100% 50%;
-    
     --shadow-card: 0 2px 8px -2px hsl(51 100% 50% / 0.2);
     --shadow-glow: 0 0 20px hsl(51 100% 60% / 0.4);
-    
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 51 100% 50%;
@@ -129,90 +122,33 @@ All colors MUST be HSL.
     --sidebar-ring: 51 100% 50%;
   }
 
-  .black {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-
-    --card: 0 0% 3%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 51 100% 50%;
-    --primary-foreground: 0 0% 0%;
-    --primary-light: 51 100% 60%;
-    --primary-glow: 51 100% 70%;
-
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 65%;
-
-    --accent: 51 100% 50%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 51 100% 50%;
-    
-    --shadow-card: 0 4px 16px -2px hsl(0 0% 0% / 0.8);
-    --shadow-glow: 0 0 30px hsl(51 100% 50% / 0.5);
-    
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 51 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 8%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 10%;
-    --sidebar-ring: 51 100% 50%;
-  }
-
+  /* ===== LIGHT THEME ===== */
   .light {
     --background: 0 0% 100%;
     --foreground: 0 0% 3%;
-
     --card: 0 0% 98%;
     --card-foreground: 0 0% 3%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3%;
-
     --primary: 51 100% 40%;
     --primary-foreground: 0 0% 100%;
     --primary-light: 51 100% 50%;
     --primary-glow: 51 100% 60%;
-
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 3%;
-
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
-
     --accent: 51 100% 40%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 51 100% 40%;
-    
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.1), 0 4px 16px -4px hsl(0 0% 0% / 0.05);
     --shadow-glow: 0 0 20px hsl(51 100% 50% / 0.2);
-    
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 3%;
     --sidebar-primary: 51 100% 40%;
@@ -223,6 +159,11 @@ All colors MUST be HSL.
     --sidebar-ring: 51 100% 40%;
   }
 }
+
+/* ============================================================================
+   BASE STYLES
+   Global element styling and resets
+   ============================================================================ */
 
 @layer base {
   * {
@@ -237,12 +178,12 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
   
-  /* Focus visible styles for accessibility */
+  /* --- Accessibility: Focus States --- */
   *:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
   
-  /* Custom scrollbar */
+  /* --- Custom Scrollbar --- */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -261,13 +202,124 @@ All colors MUST be HSL.
   }
 }
 
+/* ============================================================================
+   COMPONENT UTILITIES
+   Reusable component patterns to reduce repetition
+   ============================================================================ */
+
+@layer components {
+  /* --- Layout Patterns --- */
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+  
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+  
+  .flex-start {
+    @apply flex items-center justify-start;
+  }
+  
+  .flex-end {
+    @apply flex items-center justify-end;
+  }
+  
+  /* Common gap sizes */
+  .flex-gap-sm {
+    @apply flex items-center gap-2;
+  }
+  
+  .flex-gap-md {
+    @apply flex items-center gap-3;
+  }
+  
+  .flex-gap-lg {
+    @apply flex items-center gap-4;
+  }
+  
+  /* --- Card Patterns --- */
+  .card-base {
+    @apply bg-card text-card-foreground rounded-lg border border-border;
+  }
+  
+  .card-interactive {
+    @apply card-base transition-all duration-200 hover:shadow-card hover:border-primary/20;
+  }
+  
+  .card-elevated {
+    @apply card-base shadow-card;
+  }
+  
+  /* --- Button-like Patterns --- */
+  .interactive-icon {
+    @apply transition-colors duration-200 hover:text-primary cursor-pointer;
+  }
+  
+  .icon-button {
+    @apply p-2 rounded-lg transition-all duration-200 hover:bg-accent/50 active:scale-95;
+  }
+  
+  /* --- Text Patterns --- */
+  .text-muted-xs {
+    @apply text-xs text-muted-foreground;
+  }
+  
+  .text-muted-sm {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  .heading-page {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight;
+  }
+  
+  .heading-section {
+    @apply text-xl sm:text-2xl font-semibold;
+  }
+  
+  /* --- Status Indicators --- */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-success {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+  
+  .status-warning {
+    @apply bg-warning/10 text-warning border border-warning/20;
+  }
+  
+  .status-error {
+    @apply bg-destructive/10 text-destructive border border-destructive/20;
+  }
+  
+  .status-info {
+    @apply bg-info/10 text-info border border-info/20;
+  }
+  
+  /* --- Input Groups --- */
+  .input-group {
+    @apply space-y-2;
+  }
+  
+  .input-label {
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   Custom utilities for common effects and animations
+   ============================================================================ */
+
 @layer utilities {
-  /* Text utilities */
+  /* --- Text Utilities --- */
   .text-balance {
     text-wrap: balance;
   }
   
-  /* Animation utilities */
+  /* --- Animation Utilities --- */
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-1;
   }
@@ -280,102 +332,33 @@ All colors MUST be HSL.
     @apply transition-shadow duration-300 hover:shadow-glow;
   }
   
-  /* Interactive link with underline animation */
+  /* --- Interactive Link with Underline Animation --- */
   .link-underline {
     @apply relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left;
   }
   
-  /* Gradient text */
+  /* --- Gradient Text --- */
   .gradient-text {
     @apply bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent;
   }
   
-  /* Glass effect */
+  /* --- Glass Effect --- */
   .glass {
     @apply bg-card/50 backdrop-blur-sm border border-border/50;
   }
+  
+  /* --- Truncation Utilities --- */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
-
-/* RTL Support */
-[dir="rtl"] {
-  direction: rtl;
-}
-
-/* RTL Sidebar positioning - Fixed for Shadcn Sidebar */
-[dir="rtl"] [data-sidebar="sidebar"] {
-  left: auto !important;
-  right: 0 !important;
-  border-left: 1px solid hsl(var(--sidebar-border));
-  border-right: none;
-}
-
-[dir="rtl"] .group[data-sidebar="sidebar"] {
-  left: auto !important;
-  right: 0 !important;
-}
-
-/* RTL Main content adjustment */
-[dir="rtl"] main {
-  margin-left: 0 !important;
-}
-
-[dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] ~ main,
-[dir="rtl"] [data-sidebar="sidebar"][data-state="expanded"] + * {
-  margin-right: var(--sidebar-width, 16rem);
-  margin-left: 0;
-}
-
-[dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] ~ main,
-[dir="rtl"] [data-sidebar="sidebar"][data-state="collapsed"] + * {
-  margin-right: var(--sidebar-width-icon, 3rem);
-  margin-left: 0;
-}
-
-/* RTL Sheet (mobile sidebar) positioning */
-[dir="rtl"] [data-sidebar="sidebar"][data-mobile="true"] {
-  right: 0;
-  left: auto;
-}
-
-/* General RTL utilities */
-[dir="rtl"] .text-left {
-  text-align: right;
-}
-
-[dir="rtl"] .text-right {
-  text-align: left;
-}
-
-/* RTL Margins */
-[dir="rtl"] .mr-2 {
-  margin-right: 0;
-  margin-left: 0.5rem;
-}
-
-[dir="rtl"] .mr-4 {
-  margin-right: 0;
-  margin-left: 1rem;
-}
-
-[dir="rtl"] .mr-6 {
-  margin-right: 0;
-  margin-left: 1.5rem;
-}
-
-[dir="rtl"] .ml-2 {
-  margin-right: 0.5rem;
-  margin-left: 0;
-}
-
-[dir="rtl"] .ml-4 {
-  margin-right: 1rem;
-  margin-left: 0;
-}
-
-[dir="rtl"] .ml-6 {
-  margin-right: 1.5rem;
-  margin-left: 0;
-}
-
-/* Removed generic RTL flex-direction overrides to avoid unintended layout issues. 
-   Use component-level classes (e.g., flex-row-reverse) where needed. */
