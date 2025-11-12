@@ -12,8 +12,6 @@ import { useEffect, useState } from "react";
 const themes = [
   { value: "light", label: "Light", icon: Sun },
   { value: "dark", label: "Dark", icon: Moon },
-  { value: "black", label: "Black", icon: Circle },
-  { value: "system", label: "System", icon: Monitor },
 ];
 
 export function ThemeToggle() {

@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Sidebar,
@@ -39,8 +38,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const [isAdmin, setIsAdmin] = useState(false);
   const isMobile = useIsMobile();
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === 'ar';
+  const { t } = useTranslation();
 
   useEffect(() => {
     checkIsAdmin().then(setIsAdmin);
@@ -64,11 +62,11 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible="icon" 
-      side={isRTL ? "right" : "left"}
+      side="left"
       className="border-r"
     >
       <SidebarHeader className="border-b border-sidebar-border p-3 sm:p-4">
-        <div className={`flex items-center ${collapsed ? 'justify-center' : `gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between`} w-full`}>
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2 sm:gap-3 justify-between'} w-full`}>
           {collapsed ? (
             <button
               type="button"
@@ -80,7 +78,7 @@ export function AppSidebar() {
             </button>
           ) : (
             <>
-              <div className={`flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} min-w-0 flex-1`}>
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={toggleSidebar}
@@ -115,7 +113,7 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                          `flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                          `flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 text-sm ${
                             isActive
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                               : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -137,7 +135,7 @@ export function AppSidebar() {
                       to="/admin"
                       onClick={handleNavClick}
                       className={({ isActive }) =>
-                        `flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sm ${
+                        `flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 text-sm ${
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm"
                             : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -160,16 +158,15 @@ export function AppSidebar() {
         <SidebarMenu className="space-y-0.5 sm:space-y-1">
           {!collapsed && (
             <SidebarMenuItem>
-              <div className="px-1 sm:px-2 py-1 sm:py-2 flex gap-2">
+              <div className="px-1 sm:px-2 py-1 sm:py-2">
                 <ThemeToggle />
-                <LanguageSwitcher />
               </div>
             </SidebarMenuItem>
           )}
           <SidebarMenuItem>
             <SidebarMenuButton 
               onClick={handleSignOut} 
-              className={`flex items-center ${collapsed ? 'justify-center px-0' : `gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'} px-3`} py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
+              className={`flex items-center ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'} py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive font-medium text-sm`}
               title={collapsed ? t('nav.signOut') : undefined}
             >
               <LogOut className="w-5 h-5 shrink-0" />
