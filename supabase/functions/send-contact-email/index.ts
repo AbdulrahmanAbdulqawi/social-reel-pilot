@@ -1,10 +1,10 @@
-import { Resend } from 'https://esm.sh/resend@4.0.0';
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface ContactRequest {
@@ -16,19 +16,19 @@ interface ContactRequest {
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { name, email, subject, message }: ContactRequest = await req.json();
 
-    console.log('Sending contact email from:', email);
+    console.log("Sending contact email from:", email);
 
     // Send email to admin
     const adminEmail = await resend.emails.send({
-      from: 'ReelHub Contact <onboarding@resend.dev>',
-      to: ['support@reelhub.com'], // Replace with your actual support email
+      from: "ReelHub Contact <onboarding@resend.dev>",
+      to: ["abdulrahman.abdulqawi@reelhub.com"], // Replace with your actual support email
       replyTo: email,
       subject: `[Contact Form] ${subject}`,
       html: `
@@ -49,9 +49,9 @@ Deno.serve(async (req) => {
 
     // Send confirmation to user
     const userEmail = await resend.emails.send({
-      from: 'ReelHub Support <onboarding@resend.dev>',
+      from: "ReelHub Support <onboarding@resend.dev>",
       to: [email],
-      subject: 'We received your message!',
+      subject: "We received your message!",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2c8c8c;">Thank you for contacting us!</h2>
@@ -66,26 +66,20 @@ Deno.serve(async (req) => {
       `,
     });
 
-    console.log('Emails sent successfully:', { adminEmail, userEmail });
+    console.log("Emails sent successfully:", { adminEmail, userEmail });
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Email sent successfully' }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
-      }
-    );
+    return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    });
   } catch (error: any) {
-    console.error('Error in send-contact-email function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Failed to send email' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
+    console.error("Error in send-contact-email function:", error);
+    return new Response(JSON.stringify({ error: error.message || "Failed to send email" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 });
