@@ -10,29 +10,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const contactSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .trim()
     .min(1, { message: "Name is required" })
     .max(100, { message: "Name must be less than 100 characters" }),
-  email: z.string()
+  email: z
+    .string()
     .trim()
     .email({ message: "Invalid email address" })
     .max(255, { message: "Email must be less than 255 characters" }),
-  subject: z.string()
+  subject: z
+    .string()
     .trim()
     .min(1, { message: "Subject is required" })
     .max(200, { message: "Subject must be less than 200 characters" }),
-  message: z.string()
+  message: z
+    .string()
     .trim()
     .min(10, { message: "Message must be at least 10 characters" })
     .max(2000, { message: "Message must be less than 2000 characters" }),
@@ -58,7 +55,7 @@ export default function Contact() {
   const onSubmit = async (values: ContactFormValues) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-contact-email', {
+      const { data, error } = await supabase.functions.invoke("send-contact-email", {
         body: values,
       });
 
@@ -66,17 +63,17 @@ export default function Contact() {
 
       toast({
         variant: "success",
-        title: t('contact.messageSent'),
-        description: t('contact.messageReceived'),
+        title: t("contact.messageSent"),
+        description: t("contact.messageReceived"),
       });
 
       form.reset();
     } catch (error: any) {
-      console.error('Error sending contact email:', error);
+      console.error("Error sending contact email:", error);
       toast({
         variant: "destructive",
-        title: t('errors.somethingWrong'),
-        description: error.message || t('contact.messageError'),
+        title: t("errors.somethingWrong"),
+        description: error.message || t("contact.messageError"),
       });
     } finally {
       setLoading(false);
@@ -87,8 +84,8 @@ export default function Contact() {
     {
       icon: Mail,
       title: "Email",
-      content: "support@reelhub.com",
-      href: "mailto:support@reelhub.com",
+      content: "info@reelshub.app",
+      href: "mailto:info@reelshub.app",
     },
     {
       icon: Phone,
@@ -109,10 +106,8 @@ export default function Contact() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">{t('contact.title')}</h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {t('contact.subtitle')}
-          </p>
+          <h1 className="text-4xl font-bold mb-4">{t("contact.title")}</h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t("contact.subtitle")}</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -120,10 +115,8 @@ export default function Contact() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>{t('contact.sendMessage')}</CardTitle>
-                <CardDescription>
-                  {t('contact.sendMessageDesc')}
-                </CardDescription>
+                <CardTitle>{t("contact.sendMessage")}</CardTitle>
+                <CardDescription>{t("contact.sendMessageDesc")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -134,9 +127,9 @@ export default function Contact() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('contact.name')} *</FormLabel>
+                            <FormLabel>{t("contact.name")} *</FormLabel>
                             <FormControl>
-                              <Input placeholder={t('contact.namePlaceholder')} {...field} />
+                              <Input placeholder={t("contact.namePlaceholder")} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -148,9 +141,9 @@ export default function Contact() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t('contact.email')} *</FormLabel>
+                            <FormLabel>{t("contact.email")} *</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder={t('contact.emailPlaceholder')} {...field} />
+                              <Input type="email" placeholder={t("contact.emailPlaceholder")} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -163,9 +156,9 @@ export default function Contact() {
                       name="subject"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('contact.subject')} *</FormLabel>
+                          <FormLabel>{t("contact.subject")} *</FormLabel>
                           <FormControl>
-                            <Input placeholder={t('contact.subjectPlaceholder')} {...field} />
+                            <Input placeholder={t("contact.subjectPlaceholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -177,10 +170,10 @@ export default function Contact() {
                       name="message"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('contact.message')} *</FormLabel>
+                          <FormLabel>{t("contact.message")} *</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={t('contact.messagePlaceholder')}
+                              placeholder={t("contact.messagePlaceholder")}
                               className="min-h-[150px] resize-none"
                               {...field}
                             />
@@ -192,7 +185,7 @@ export default function Contact() {
 
                     <Button type="submit" disabled={loading} className="w-full">
                       <Send className="h-4 w-4 mr-2" />
-                      {loading ? t('contact.sending') : t('contact.send')}
+                      {loading ? t("contact.sending") : t("contact.send")}
                     </Button>
                   </form>
                 </Form>
@@ -204,19 +197,14 @@ export default function Contact() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>{t('contact.contactInfo')}</CardTitle>
-                <CardDescription>
-                  {t('contact.contactInfoDesc')}
-                </CardDescription>
+                <CardTitle>{t("contact.contactInfo")}</CardTitle>
+                <CardDescription>{t("contact.contactInfoDesc")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {contactInfo.map((info, index) => {
                   const Icon = info.icon;
                   const content = info.href ? (
-                    <a
-                      href={info.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
+                    <a href={info.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                       {info.content}
                     </a>
                   ) : (
@@ -240,20 +228,20 @@ export default function Contact() {
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('contact.businessHours')}</CardTitle>
+                <CardTitle>{t("contact.businessHours")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('contact.mondayFriday')}</span>
+                  <span className="text-muted-foreground">{t("contact.mondayFriday")}</span>
                   <span className="font-medium">9:00 AM - 6:00 PM</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('contact.saturday')}</span>
+                  <span className="text-muted-foreground">{t("contact.saturday")}</span>
                   <span className="font-medium">10:00 AM - 4:00 PM</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('contact.sunday')}</span>
-                  <span className="font-medium">{t('contact.closed')}</span>
+                  <span className="text-muted-foreground">{t("contact.sunday")}</span>
+                  <span className="font-medium">{t("contact.closed")}</span>
                 </div>
               </CardContent>
             </Card>
