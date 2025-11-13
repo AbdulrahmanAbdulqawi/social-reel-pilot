@@ -10,16 +10,16 @@ export function MobileSidebarTrigger() {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
 
-  // Only show on mobile when sidebar is closed
-  if (!isMobile || open) return null;
+  // Only show on mobile
+  if (!isMobile) return null;
 
   return (
     <Button
       variant="outline"
       size="icon"
-      onClick={() => setOpenMobile(true)}
+      onClick={() => setOpenMobile(!open)}
       className={`fixed top-4 ${isRTL ? 'right-4' : 'left-4'} z-50 shadow-lg bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent`}
-      aria-label="Open menu"
+      aria-label={open ? "Close menu" : "Open menu"}
     >
       <Menu className="h-5 w-5" />
     </Button>

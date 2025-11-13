@@ -77,6 +77,30 @@ Deno.serve(async (req) => {
     });
   } catch (error: any) {
     console.error("Error in send-contact-email function:", error);
+    
+    // Send failure notification to admin
+    try {
+      await resend.emails.send({
+        from: "ReelHub Alerts <onboarding@resend.dev>",
+        to: ["info@reelshub.app"],
+        subject: "🚨 Contact Form Submission Failed",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #dc2626;">Contact Form Error</h2>
+            <div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+              <p><strong>Error:</strong> ${error.message || "Unknown error"}</p>
+              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+              <p><strong>Details:</strong></p>
+              <pre style="background: #fff; padding: 10px; border-radius: 4px; overflow-x: auto;">${JSON.stringify(error, null, 2)}</pre>
+            </div>
+            <p style="color: #666; font-size: 12px;">This is an automated alert from your ReelHub contact form.</p>
+          </div>
+        `,
+      });
+    } catch (alertError) {
+      console.error("Failed to send alert email:", alertError);
+    }
+    
     return new Response(JSON.stringify({ error: error.message || "Failed to send email" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
