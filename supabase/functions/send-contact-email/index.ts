@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
 
     // Send email to admin
     const adminEmail = await resend.emails.send({
-      from: "abdulrahman.abdulqawi@reelshub.app",
-      to: ["info@reelshub.app"], // Replace with your actual support email
+      from: "ReelHub Contact <onboarding@resend.dev>",
+      to: ["info@reelshub.app"],
       replyTo: email,
       subject: `[Contact Form] ${subject}`,
       html: `
