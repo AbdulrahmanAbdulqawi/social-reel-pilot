@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     // Send email to admin
     const adminEmail = await resend.emails.send({
-      from: "ReelHub Contact <onboarding@resend.dev>",
+      from: "ReelHub Contact <info@reelshub.app>",
       to: ["info@reelshub.app"],
       replyTo: email,
       subject: `[Contact Form] ${subject}`,
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     // Send confirmation to user
     const userEmail = await resend.emails.send({
-      from: "ReelHub Support <onboarding@resend.dev>",
+      from: "ReelHub Support <info@reelshub.app>",
       to: [email],
       subject: "We received your message!",
       html: `
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     // Send failure notification to admin
     try {
       await resend.emails.send({
-        from: "ReelHub Alerts <onboarding@resend.dev>",
+        from: "ReelHub Alerts <info@reelshub.app>",
         to: ["info@reelshub.app"],
         subject: "🚨 Contact Form Submission Failed",
         html: `
