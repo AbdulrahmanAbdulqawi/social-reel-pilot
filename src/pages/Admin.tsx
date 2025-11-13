@@ -63,12 +63,7 @@ export default function Admin() {
       });
 
       if (error || !data) {
-        toast({
-          variant: "destructive",
-          title: "Access Denied",
-          description: "You don't have admin privileges."
-        });
-        navigate('/');
+        navigate('/dashboard', { replace: true });
         return;
       }
 
@@ -76,7 +71,7 @@ export default function Admin() {
       await loadDashboardData();
     } catch (error) {
       console.error('Error checking admin access:', error);
-      navigate('/');
+      navigate('/dashboard', { replace: true });
     } finally {
       setLoading(false);
     }
