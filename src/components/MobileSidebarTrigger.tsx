@@ -5,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 
 export function MobileSidebarTrigger() {
-  const { open, setOpenMobile } = useSidebar();
+  const { openMobile, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
@@ -17,9 +17,9 @@ export function MobileSidebarTrigger() {
     <Button
       variant="outline"
       size="icon"
-      onClick={() => setOpenMobile(!open)}
+      onClick={() => setOpenMobile(!openMobile)}
       className={`fixed top-4 ${isRTL ? 'right-4' : 'left-4'} z-50 shadow-lg bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hover:bg-accent`}
-      aria-label={open ? "Close menu" : "Open menu"}
+      aria-label={openMobile ? "Close menu" : "Open menu"}
     >
       <Menu className="h-5 w-5" />
     </Button>
